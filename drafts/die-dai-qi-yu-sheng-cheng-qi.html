@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html" charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+
+  <title>迭代器与生成器</title>
+
+
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="origin" />
+  <meta name="generator" content="Pelican" />
+  <link href="/" rel="canonical" />
+
+  <!-- Feed -->
+
+  <link href="/theme/css/style.css" type="text/css" rel="stylesheet" />
+
+  <!-- Code highlight color scheme -->
+      <link href="/theme/css/code_blocks/github.css" rel="stylesheet">
+
+
+  <!-- Custom fonts -->
+  <link href='https://fonts.googleapis.com/css?family=Montserrat:400,300' rel='stylesheet' type='text/css' />
+  <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet" type="text/css" />
+
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+  <![endif]-->
+
+
+  <link href="/drafts/die-dai-qi-yu-sheng-cheng-qi.html" rel="canonical" />
+
+    <meta name="description" content="作为python函数式编程中的一个重要话题，迭代器与生成器的理解与掌握对于对于书写良好的代码大有裨益。本文对迭代器与生成器的区别与联系进行了讨论。">
+
+    <meta name="author" content="xiaojia">
+
+
+
+
+
+<!-- Open Graph -->
+<meta property="og:site_name" content="Stay Hungry, Stay Foolish"/>
+<meta property="og:title" content="迭代器与生成器"/>
+<meta property="og:description" content="作为python函数式编程中的一个重要话题，迭代器与生成器的理解与掌握对于对于书写良好的代码大有裨益。本文对迭代器与生成器的区别与联系进行了讨论。"/>
+<meta property="og:locale" content="en_US"/>
+<meta property="og:url" content="/drafts/die-dai-qi-yu-sheng-cheng-qi.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2019-01-28 14:42:12.397874+00:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="/author/xiaojia.html">
+<meta property="article:section" content="articles"/>
+<meta property="og:image" content="/images/home-bg.jpg">
+
+<!-- Twitter Card -->
+
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "Article",
+  "name": "迭代器与生成器",
+  "headline": "迭代器与生成器",
+  "datePublished": "2019-01-28 14:42:12.397874+00:00",
+  "dateModified": "",
+  "author": {
+    "@type": "Person",
+    "name": "xiaojia",
+    "url": "/author/xiaojia.html"
+  },
+  "image": "/images/home-bg.jpg",
+  "url": "/drafts/die-dai-qi-yu-sheng-cheng-qi.html",
+  "description": "作为python函数式编程中的一个重要话题，迭代器与生成器的理解与掌握对于对于书写良好的代码大有裨益。本文对迭代器与生成器的区别与联系进行了讨论。"
+}
+</script>
+</head>
+<!-- TODO : Body class -->
+<body class="home-template">
+
+<nav id="menu">
+  <a class="close-button">Close</a>
+  <div class="nav-wrapper">
+    <p class="nav-label">Menu</p>
+    <ul>
+          <li><a href="/archives.html" role="presentation">Archive</a></li>
+          <li><a href="/category/shu-ping.html" role="presentation">书评</a></li>
+          <li><a href="/category/za-wen.html" role="presentation">杂文</a></li>
+
+              <li role="presentation"><a href="/pages/about-me.html">About Me</a></li>
+
+    </ul>
+  </div>
+</nav>
+    <!-- Progressbar -->
+    <div class="progress-container">
+        <span class="progress-bar"></span>
+    </div>
+
+    <!-- Page Header -->
+    <!-- Set your background image for this header on the line below. -->
+    <header id="post-header" class="has-cover">
+      <div class="inner">
+        <nav id="navigation">
+            <span id="home-button" class="nav-button">
+                <a class="home-button" href="/" title="Home"><i class="ic ic-arrow-left"></i> Home</a>
+            </span>
+          <span id="menu-button" class="nav-button">
+            <a class="menu-button"><i class="ic ic-menu"></i> Menu</a>
+          </span>
+        </nav>
+        <h1 class="post-title">迭代器与生成器</h1>
+        <!-- TODO : Proper class for headline -->
+        <span class="post-meta">
+                <a href="/author/xiaojia.html">xiaojia</a>
+            | <time datetime="28/01/2019">28/01/2019</time>
+        </span>
+        <!-- TODO : Modified check -->
+            <div class="post-cover cover" style="background-image: url('/images/home-bg.jpg')">
+      </div>
+    </header>
+
+  <section id="wrapper">
+    <a class="hidden-close"></a>
+
+    <!-- Post content -->
+    <main class="content" role="main">
+        <article class="post">
+        <div class="inner">
+            <section class="post-content">
+                <p>迭代器与生成器是python函数式编程中的一个重要话题，理解与掌握相关内容对于书写良好的代码大有裨益。本文将涉及以下内容：</p>
+<div class="toc">
+<ul>
+<li><a href="#1">1. 可迭代对象与迭代器<a name="first"></a></a><ul>
+<li><a href="#11">1.1 自身即是迭代器的可迭代对象<a name="first_1"></a></a></li>
+<li><a href="#12-vs">1.2 多个迭代器 VS 单个迭代器<a name="first_2"></a></a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h3 id="1">1. 可迭代对象与迭代器<a name="first"></a></h3>
+<p>在python语言中，可迭代对象的概念是非常普遍的，最常见的是在序列类型，如 <code>list</code>，<code>tuple</code>, <code>str</code>，使用for循环遍历
+序列中的每一个元素。非序列类型如<code>set</code>,<code>dict</code>也支持for循环遍历，其中对字典的遍历实际上是对字典中键的遍历。</p>
+<p>可以使用for循环进行遍历的特性展示了这些对象是可迭代的，称之为可迭代对象。可迭代对象内部均实现了<code>__iter__</code>方法，调用该方法
+将返回一个基于该对象的迭代器。事实上，当我们对列表，元组进行遍历时，for循环处理的并非这些可迭代对象自身，而是遍历的该
+对象的<code>__iter__</code>方法所返回的迭代器。for循环会自动调用对象的<code>__iter__</code>方法。</p>
+<blockquote>
+<p>python语言中使用<code>iter</code>函数返回一个对象的迭代器对象是该语言的一种语法糖，类似于使用<code>len(object)</code>等价与<code>object.__len__</code></p>
+</blockquote>
+<p>总结：可迭代对象是定义了<code>__iter__</code>方法的对象，可迭代对象通过调用<code>__iter__</code>方法返回一个用于迭代的迭代器。</p>
+<p>我们提到，使用for循环遍历可迭代对象时，实际上会默认调用其<code>__iter__</code>方法，返回一个迭代器。那么迭代器的遍历本质又是什么呢？</p>
+<p>可迭代对象所返回的迭代器定义了<code>__next__</code>方法，每次调用<code>__next__</code>方法一次，返回一个所包含的元素，当迭代完毕时，将抛出<code>StopIteration</code>
+异常。for循环事实上就是在连续调用可迭代对象的这一方法，但同时也会对迭代终止异常进行适当处理。对应的，对<code>__next__</code>方法的直接调用等价与使用<code>next</code>函数。</p>
+<h4 id="11">1.1 自身即是迭代器的可迭代对象<a name="first_1"></a></h4>
+<p>前面分析了可迭代对象与迭代器的区别，以列表为例，一个列表对象是一个可迭代对象，其定义了<code>__iter__</code>方法，该方法返回一个定义了<code>__next__</code>方法的迭代器，因此列表对象本身并不是一个迭代器。如下例所示：</p>
+<div class="highlight"><pre><span></span><span class="n">num</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+<span class="s2">&quot;__iter__&quot;</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">num</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>True
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">num_iter</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">num</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">num_iter</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;__next__&quot;</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">num_iter</span><span class="p">))</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>&amp;lt;class &#39;list_iterator&#39;&amp;gt;
+True
+</pre></div>
+
+
+<p>但对于一些可迭代对象，其自身便是迭代器，内置类型中的文件类型即是代表。</p>
+<div class="highlight"><pre><span></span><span class="n">f</span> <span class="o">=</span>  <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;file.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span>
+<span class="nb">iter</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="ow">is</span> <span class="n">f</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>True
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="k">print</span><span class="p">(</span><span class="s2">&quot;__iter__&quot;</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;__next__&quot;</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>True
+True
+</pre></div>
+
+
+<p>可以看对，文件对象的<code>__iter__</code>方法返回其自身，且其同时定义了<code>__iter__</code>方法和<code>__next__</code>方法。</p>
+<h4 id="12-vs">1.2 多个迭代器 VS 单个迭代器<a name="first_2"></a></h4>
+<p>不同的可迭代对象，有的支持多个迭代器，即由该可迭代对象可返回多个迭代器，每个迭代器保存着各自的状态。有的可迭代对象仅支持一个迭代器，
+将不同变量赋值给该可迭代对象的迭代器，实际上这些变量将只指向同一个引用。我们分别以列表对象和<code>zip</code>函数所返回的可迭代对象对上述两种
+类型的可迭代对象进行说明。</p>
+<div class="highlight"><pre><span></span><span class="n">num</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+<span class="n">num_iter1</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">num</span><span class="p">)</span>
+<span class="n">num_iter2</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">num</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;the first element of num_iter1: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">num_iter1</span><span class="p">)))</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;the first element of num_iter2: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">num_iter2</span><span class="p">)))</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;num_iter1 is num_iter2:&quot;</span><span class="p">,</span> <span class="n">num_iter1</span> <span class="ow">is</span> <span class="n">num_iter2</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>the first element of num_iter1: 1
+the first element of num_iter2: 1
+num_iter1 is num_iter2: False
+</pre></div>
+
+
+<p>可以看出，列表对象支持多个迭代器，每一迭代器均保存了自己的迭代状态。</p>
+<div class="highlight"><pre><span></span><span class="n">name</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Apple&quot;</span><span class="p">,</span> <span class="s2">&quot;Banana&quot;</span><span class="p">)</span>
+<span class="n">price</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.6</span><span class="p">,</span> <span class="mf">2.3</span><span class="p">)</span>
+<span class="n">name_price</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">price</span><span class="p">)</span>
+<span class="n">name_price_iter1</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">name_price</span><span class="p">)</span>
+<span class="n">name_price_iter2</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">name_price</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;the fisrt element of name_price1: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">name_price_iter1</span><span class="p">)))</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;the fisrt element of name_price2: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">name_price_iter2</span><span class="p">)))</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;name_price_iter1 is name_price_iter2: &quot;</span><span class="p">,</span> <span class="n">name_price_iter1</span> <span class="ow">is</span> <span class="n">name_price_iter2</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>the fisrt element of name_price1: (&#39;Apple&#39;, 1.6)
+the fisrt element of name_price2: (&#39;Banana&#39;, 2.3)
+name_price_iter1 is name_price_iter2:  True
+</pre></div>
+
+
+<p>我们看到，将zip可迭代对象的迭代器赋值给两个变量，变量name_price_iter1的迭代状态的变化影响到了name_price_iter1迭代状态。因为它们指向了同一个引用。</p>
+<div class="highlight"><pre><span></span>
+</pre></div>
+            </section>
+
+            <section class="post-info">
+                <div class="post-share">
+                    <a class="twitter" href="https://twitter.com/share?text=迭代器与生成器&amp;url=/drafts/die-dai-qi-yu-sheng-cheng-qi.html" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                    <i class="ic ic-twitter"></i><span class="hidden">Twitter</span>
+                    </a>
+                    <a class="facebook" href="https://www.facebook.com/sharer/sharer.php?u=/drafts/die-dai-qi-yu-sheng-cheng-qi.html" onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                    <i class="ic ic-facebook"></i><span class="hidden">Facebook</span>
+                    </a>
+                    <a class="googleplus" href="https://plus.google.com/share?url=/drafts/die-dai-qi-yu-sheng-cheng-qi.html" onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                    <i class="ic ic-googleplus"></i><span class="hidden">Google+</span>
+                    </a>
+                    <div class="clear"></div>
+                </div>
+
+
+                <div class="clear"></div>
+
+                <aside class="post-author">
+
+
+                        <figure class="post-author-avatar">
+                            <img src="/images/touxiang.jpeg" alt="xiaojia" />
+                        </figure>
+                    <div class="post-author-bio">
+                        <h4 class="post-author-name"><a href="/author/xiaojia.html">xiaojia</a></h4>
+                            <p class="post-author-about">北京交通大学交通运输规划与管理专业</p>
+                            <span class="post-author-location"><i class="ic ic-location"></i> Beijing</span>
+                        <!-- Social linkes in alphabet order. -->
+                            <span class="post-author-github"><a target="_blank" href="https://github.com/XiaojiaZhang"><i class="ic ic-link"></i> GitHub</a></span>
+                    </div>
+                    <div class="clear"></div>
+                </aside>
+
+                </section>
+
+
+                <aside class="post-nav">
+                    <div class="clear"></div>
+                </aside>
+
+            </div>
+        </article>
+    </main>
+      <!-- TODO : Body class -->
+    <div id="body-class" style="display: none;" class=""></div>
+
+    <footer id="footer">
+      <div class="inner">
+        <section class="credits">
+
+
+          <span class="credits-theme">Theme <a href="https://github.com/arulrajnet/attila" rel="nofollow">Attila</a></span>
+          <span class="credits-software">Published with <a href="https://github.com/getpelican/pelican" rel="nofollow">Pelican</a></span>
+        </section>
+      </div>
+    </footer>
+  </section>
+
+  <script type="text/javascript" src="/theme/js/script.js"></script>
+
+</body>
+</html>

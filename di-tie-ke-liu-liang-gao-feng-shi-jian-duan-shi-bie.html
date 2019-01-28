@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html" charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+
+  <title>地铁客流量高峰时间段识别</title>
+
+
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="origin" />
+  <meta name="generator" content="Pelican" />
+  <link href="/" rel="canonical" />
+
+  <!-- Feed -->
+
+  <link href="/theme/css/style.css" type="text/css" rel="stylesheet" />
+
+  <!-- Code highlight color scheme -->
+      <link href="/theme/css/code_blocks/github.css" rel="stylesheet">
+
+
+  <!-- Custom fonts -->
+  <link href='https://fonts.googleapis.com/css?family=Montserrat:400,300' rel='stylesheet' type='text/css' />
+  <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet" type="text/css" />
+
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+  <![endif]-->
+
+
+  <link href="/di-tie-ke-liu-liang-gao-feng-shi-jian-duan-shi-bie.html" rel="canonical" />
+
+    <meta name="description" content="给定一组地铁客流量数据，如何确定其早晚高峰时刻呢？通过绘制流量变化折线图，我们可以很容易通过读图来指出最晚高峰起止时刻，人工方式很容易解决的问题该如何通过计算机实现呢？">
+
+    <meta name="author" content="xiaojia">
+
+    <meta name="tags" content="数据分析">
+    <meta name="tags" content="python">
+
+
+
+
+<!-- Open Graph -->
+<meta property="og:site_name" content="Stay Hungry, Stay Foolish"/>
+<meta property="og:title" content="地铁客流量高峰时间段识别"/>
+<meta property="og:description" content="给定一组地铁客流量数据，如何确定其早晚高峰时刻呢？通过绘制流量变化折线图，我们可以很容易通过读图来指出最晚高峰起止时刻，人工方式很容易解决的问题该如何通过计算机实现呢？"/>
+<meta property="og:locale" content="en_US"/>
+<meta property="og:url" content="/di-tie-ke-liu-liang-gao-feng-shi-jian-duan-shi-bie.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2019-01-28 14:51:19.787309+00:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="/author/xiaojia.html">
+<meta property="article:section" content="杂文"/>
+<meta property="article:tag" content="数据分析"/>
+<meta property="article:tag" content="python"/>
+<meta property="og:image" content="/images/客流量高峰时段确定/subway_flow.jpg">
+
+<!-- Twitter Card -->
+
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "Article",
+  "name": "地铁客流量高峰时间段识别",
+  "headline": "地铁客流量高峰时间段识别",
+  "datePublished": "2019-01-28 14:51:19.787309+00:00",
+  "dateModified": "",
+  "author": {
+    "@type": "Person",
+    "name": "xiaojia",
+    "url": "/author/xiaojia.html"
+  },
+  "image": "/images/客流量高峰时段确定/subway_flow.jpg",
+  "url": "/di-tie-ke-liu-liang-gao-feng-shi-jian-duan-shi-bie.html",
+  "description": "给定一组地铁客流量数据，如何确定其早晚高峰时刻呢？通过绘制流量变化折线图，我们可以很容易通过读图来指出最晚高峰起止时刻，人工方式很容易解决的问题该如何通过计算机实现呢？"
+}
+</script>
+</head>
+<!-- TODO : Body class -->
+<body class="home-template">
+
+<nav id="menu">
+  <a class="close-button">Close</a>
+  <div class="nav-wrapper">
+    <p class="nav-label">Menu</p>
+    <ul>
+          <li><a href="/archives.html" role="presentation">Archive</a></li>
+          <li><a href="/category/shu-ping.html" role="presentation">书评</a></li>
+          <li><a href="/category/za-wen.html" role="presentation">杂文</a></li>
+
+              <li role="presentation"><a href="/pages/about-me.html">About Me</a></li>
+
+    </ul>
+  </div>
+</nav>
+    <!-- Progressbar -->
+    <div class="progress-container">
+        <span class="progress-bar"></span>
+    </div>
+
+    <!-- Page Header -->
+    <!-- Set your background image for this header on the line below. -->
+    <header id="post-header" class="has-cover">
+      <div class="inner">
+        <nav id="navigation">
+            <span id="home-button" class="nav-button">
+                <a class="home-button" href="/" title="Home"><i class="ic ic-arrow-left"></i> Home</a>
+            </span>
+          <span id="menu-button" class="nav-button">
+            <a class="menu-button"><i class="ic ic-menu"></i> Menu</a>
+          </span>
+        </nav>
+        <h1 class="post-title">地铁客流量高峰时间段识别</h1>
+        <!-- TODO : Proper class for headline -->
+        <span class="post-meta">
+                <a href="/author/xiaojia.html">xiaojia</a>
+            | <time datetime="28/01/2019">28/01/2019</time>
+        </span>
+        <!-- TODO : Modified check -->
+            <div class="post-cover cover" style="background-image: url('/images/客流量高峰时段确定/subway_flow.jpg')">
+      </div>
+    </header>
+
+  <section id="wrapper">
+    <a class="hidden-close"></a>
+
+    <!-- Post content -->
+    <main class="content" role="main">
+        <article class="post">
+        <div class="inner">
+            <section class="post-content">
+                <div class="toc">
+<ul>
+<li><a href="#1">1. 确定客流量高峰时间段</a></li>
+<li><a href="#2">2. 基于局部极小值的高峰时间段确定方法</a></li>
+<li><a href="#3">3. 高峰时间段的进一步处理</a><ul>
+<li><a href="#31">3.1 合并高峰时间段</a></li>
+<li><a href="#32">3.2  过滤高峰时间段</a></li>
+<li><a href="#33">3.3 高峰时段压缩</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="1">1. 确定客流量高峰时间段</h2>
+<p>假定有如下一天的地铁客流量数据（每半小时统计一次），如何确定其早晚高峰时间段？</p>
+<div class="highlight"><pre><span></span><span class="n">flow</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span>
+ <span class="mf">20.0</span><span class="p">,</span><span class="mf">128.0</span><span class="p">,</span><span class="mf">410.0</span><span class="p">,</span><span class="mf">967.0</span><span class="p">,</span><span class="mf">2445.0</span><span class="p">,</span><span class="mf">4838.0</span><span class="p">,</span><span class="mf">5920.0</span><span class="p">,</span>
+ <span class="mf">4537.0</span><span class="p">,</span><span class="mf">2747.0</span><span class="p">,</span><span class="mf">1385.0</span><span class="p">,</span><span class="mf">901.0</span><span class="p">,</span><span class="mf">710.0</span><span class="p">,</span><span class="mf">671.0</span><span class="p">,</span><span class="mf">561.0</span><span class="p">,</span>
+ <span class="mf">647.0</span><span class="p">,</span><span class="mf">668.0</span><span class="p">,</span><span class="mf">693.0</span><span class="p">,</span><span class="mf">649.0</span><span class="p">,</span><span class="mf">645.0</span><span class="p">,</span><span class="mf">609.0</span><span class="p">,</span><span class="mf">514.0</span><span class="p">,</span><span class="mf">509.0</span><span class="p">,</span>
+ <span class="mf">551.0</span><span class="p">,</span><span class="mf">651.0</span><span class="p">,</span><span class="mf">897.0</span><span class="p">,</span><span class="mf">1068.0</span><span class="p">,</span><span class="mf">1075.0</span><span class="p">,</span><span class="mf">826.0</span><span class="p">,</span><span class="mf">546.0</span><span class="p">,</span><span class="mf">384.0</span><span class="p">,</span>
+ <span class="mf">325.0</span><span class="p">,</span><span class="mf">295.0</span><span class="p">,</span><span class="mf">280.0</span><span class="p">,</span><span class="mf">255.0</span><span class="p">,</span><span class="mf">194.0</span><span class="p">,</span><span class="mf">96.0</span><span class="p">,</span><span class="mf">20.0</span><span class="p">]</span>
+</pre></div>
+
+
+<p>可以通过绘制折线图来观察这组流量数据：</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">flow</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+
+<p><img alt="png" src="/images/客流量高峰时段确定/output_4_0.png"></p>
+<p>可以看出，这组数据中存在比较明显的两个高峰时间段，分别对应早高峰和晚高峰。如果通过人工来读这张图片，我们很容易便能确定高峰时间段位置，但这是通过观察图表的形式来提取出的信息，那么如何从一组流量数据中自动化地确定高峰时间段呢？</p>
+<h2 id="2">2. 基于局部极小值的高峰时间段确定方法</h2>
+<p>对于一维的流量数据，可以通过确定局部极小值的方法找到大致确定高峰时间段。每两个相邻的局部极小值构成一个高峰时间段，特别地，客流量数据的左右两个端点也可视为局部极小值。可以使用<code>scipy.signal</code>模块中的<code>argrelmin</code>, <code>argrelmax</code>两个函数 确定局部极小点和局部极大点的出现位置。如下所示：</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">argrelmin</span><span class="p">,</span><span class="n">argrelmax</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="n">local_min</span> <span class="o">=</span> <span class="n">argrelmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">flow</span><span class="p">))</span>
+<span class="n">local_max</span> <span class="o">=</span> <span class="n">argrelmax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">flow</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;局部极小值的次序：&quot;</span><span class="p">,</span> <span class="n">local_min</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;局部极大值的次序：&quot;</span><span class="p">,</span> <span class="n">local_max</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>局部极小值的次序： [24 32]
+局部极大值的次序： [17 27 37]
+</pre></div>
+
+
+<p>为便于后续讲解，创建名为period的命名元组用于表示一个高峰时间段，该元组包括高峰时间段起始、终止以及峰值时刻。</p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span>
+<span class="n">period</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;period&#39;</span><span class="p">,</span> <span class="s1">&#39;start end peak&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>将上述基于局部极小值的高峰时间段确定方法写为函数，（将左右端点也添加到局部极小值中）</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">cal_peak_period</span><span class="p">(</span><span class="n">flow_seq</span><span class="p">):</span>
+    <span class="n">local_min</span><span class="p">,</span>  <span class="o">=</span> <span class="n">argrelmin</span><span class="p">(</span><span class="n">flow_seq</span><span class="p">)</span>
+    <span class="n">local_max</span><span class="p">,</span> <span class="o">=</span> <span class="n">argrelmax</span><span class="p">(</span><span class="n">flow_seq</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">local_min</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">period</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">local_min</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">local_max</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">local_min</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">period</span><span class="p">(</span><span class="n">local_min</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">flow_seq</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">local_max</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">period</span><span class="p">(</span><span class="n">local_min</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">local_min</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">local_max</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+<span class="nb">tuple</span><span class="p">(</span><span class="n">cal_peak_period</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">flow</span><span class="p">)))</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>(period(start=0, end=24, peak=17),
+ period(start=24, end=32, peak=27),
+ period(start=32, end=47, peak=37))
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">plot_period</span><span class="p">(</span><span class="n">periods</span><span class="p">,</span> <span class="n">flow_seq</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">period_</span> <span class="ow">in</span> <span class="n">periods</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">period_</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">period_</span><span class="o">.</span><span class="n">end</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">flow_seq</span><span class="p">[</span><span class="n">period_</span><span class="o">.</span><span class="n">start</span><span class="p">:(</span><span class="n">period_</span><span class="o">.</span><span class="n">end</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="n">periods</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">cal_peak_period</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">flow</span><span class="p">)))</span>
+<span class="n">plot_period</span><span class="p">(</span><span class="n">periods</span><span class="p">,</span> <span class="n">flow</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="png" src="/images/客流量高峰时段确定/output_13_0.png"></p>
+<p>如上便是通过局部极小值初步确定的三个高峰时间段。</p>
+<h2 id="3">3. 高峰时间段的进一步处理</h2>
+<p>第二小节基于局部极小值的方法大致确定了局部极小值，但相对于理想的高峰时间段，仍然有待进一步处理，此处列出三个问题：</p>
+<h3 id="31">3.1 合并高峰时间段</h3>
+<p>如果一个高峰时间段刚开始不久就到达峰值，则考虑将其与前一个高峰时间段进行合并。这种情形主要出现在客流量在某一时刻相较于其整体变化趋势出现的一个瞬时突变。如下例客流量。</p>
+<div class="highlight"><pre><span></span><span class="n">flow_2</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span>
+ <span class="mf">26.0</span><span class="p">,</span><span class="mf">96.0</span><span class="p">,</span><span class="mf">305.0</span><span class="p">,</span><span class="mf">708.0</span><span class="p">,</span><span class="mf">1483.0</span><span class="p">,</span><span class="mf">3263.0</span><span class="p">,</span>
+ <span class="mf">5848.0</span><span class="p">,</span><span class="mf">6752.0</span><span class="p">,</span><span class="mf">5213.0</span><span class="p">,</span><span class="mf">3303.0</span><span class="p">,</span><span class="mf">1903.0</span><span class="p">,</span>
+ <span class="mf">1437.0</span><span class="p">,</span><span class="mf">1272.0</span><span class="p">,</span><span class="mf">1252.0</span><span class="p">,</span><span class="mf">1183.0</span><span class="p">,</span><span class="mf">1228.0</span><span class="p">,</span>
+ <span class="mf">1259.0</span><span class="p">,</span><span class="mf">1293.0</span><span class="p">,</span><span class="mf">1304.0</span><span class="p">,</span><span class="mf">1308.0</span><span class="p">,</span><span class="mf">1365.0</span><span class="p">,</span>
+ <span class="mf">1384.0</span><span class="p">,</span><span class="mf">1546.0</span><span class="p">,</span><span class="mf">1792.0</span><span class="p">,</span><span class="mf">3218.0</span><span class="p">,</span><span class="mf">4800.0</span><span class="p">,</span>
+ <span class="mf">5694.0</span><span class="p">,</span><span class="mf">4671.0</span><span class="p">,</span><span class="mf">3130.0</span><span class="p">,</span><span class="mf">2017.0</span><span class="p">,</span><span class="mf">1532.0</span><span class="p">,</span>
+ <span class="mf">1256.0</span><span class="p">,</span><span class="mf">1175.0</span><span class="p">,</span><span class="mf">933.0</span><span class="p">,</span><span class="mf">1008.0</span><span class="p">,</span><span class="mf">418.0</span><span class="p">,</span>
+ <span class="mf">153.0</span><span class="p">,</span><span class="mf">24.0</span><span class="p">]</span>
+
+<span class="n">periods_2</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">cal_peak_period</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">flow_2</span><span class="p">)))</span>
+<span class="n">plot_period</span><span class="p">(</span><span class="n">periods_2</span><span class="p">,</span> <span class="n">flow_2</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="png" src="/images/客流量高峰时段确定/output_17_0.png"></p>
+<p>可以看出，此段客流量中存在三个高峰时间段，但观察第三个高峰时间段，其在刚开始半小时后便到达峰值，随后开始下降。观察其前一高峰时间段，容易发现，第三个高峰时间段的确定仅仅是因为其存在一个略高于其周围时刻的客流量。第三个高峰时间段更应当被合并到第二个高峰时间段内，而不是单独拆分出来。</p>
+<p>与之对应，如果一个高峰时间段从峰值开始刚下降不久就开始另一个高峰时间段，则该高峰时间段应该与其后一个高峰时段进行合并。</p>
+<p>高峰时间段的具体合并原则主要是对前述提到的“不久”这一持续时间的量化，对于此处提到的每半小时统计的客流量数据，可以将其最小持续时间设置为1小时。</p>
+<div class="highlight"><pre><span></span><span class="c1"># least_continue_increase=3, 表示从开始到达峰值至少持续1小时</span>
+<span class="k">def</span> <span class="nf">merge_period_increase</span><span class="p">(</span><span class="n">peak_period</span><span class="p">,</span> <span class="n">least_continue_increase</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="n">peak_period_copy</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">peak_period</span><span class="p">)</span>
+    <span class="n">remove_index</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">period_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">peak_period</span><span class="p">))[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">period_</span><span class="o">.</span><span class="n">peak</span> <span class="o">-</span> <span class="n">period_</span><span class="o">.</span><span class="n">start</span> <span class="o">&lt;</span> <span class="n">least_continue_increase</span><span class="p">:</span>
+            <span class="n">peak_period_copy</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">period</span><span class="p">(</span><span class="n">peak_period_copy</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">start</span><span class="p">,</span>
+                                           <span class="n">period_</span><span class="o">.</span><span class="n">end</span><span class="p">,</span>
+                                           <span class="n">peak_period_copy</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">peak</span><span class="p">)</span>
+            <span class="n">remove_index</span> <span class="o">+=</span> <span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+    <span class="n">reverse_peak_period</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">peak_period_copy</span><span class="p">))[</span><span class="n">i</span><span class="p">]</span>
+                                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">peak_period_copy</span><span class="p">))</span>
+                                <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">remove_index</span><span class="p">)</span> 
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">reverse_peak_period</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">merge_period_decrease</span><span class="p">(</span><span class="n">peak_period</span><span class="p">,</span> <span class="n">least_continus_decrease</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="n">peak_period_copy</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">peak_period</span><span class="p">)</span>
+    <span class="n">remove_index</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">period_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">peak_period_copy</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="n">period_</span><span class="o">.</span><span class="n">end</span> <span class="o">-</span> <span class="n">period_</span><span class="o">.</span><span class="n">peak</span> <span class="o">&lt;</span> <span class="n">least_continus_decrease</span><span class="p">:</span>
+            <span class="n">peak_period_copy</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">period</span><span class="p">(</span><span class="n">period</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> 
+                                           <span class="n">peak_period_copy</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">end</span><span class="p">,</span>
+                                           <span class="n">peak_period_copy</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">peak</span><span class="p">)</span>
+            <span class="n">remove_index</span> <span class="o">+=</span> <span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">peak_period_copy</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">peak_period_copy</span><span class="p">))</span>
+                 <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">remove_index</span><span class="p">)</span>
+
+<span class="n">merge_period</span> <span class="o">=</span> <span class="n">merge_period_decrease</span><span class="p">(</span><span class="n">merge_period_increase</span><span class="p">(</span><span class="n">periods_2</span><span class="p">))</span>
+<span class="n">plot_period</span><span class="p">(</span><span class="n">merge_period</span><span class="p">,</span> <span class="n">flow_2</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="png" src="/images/客流量高峰时段确定/output_20_0.png"></p>
+<p>如上是经过合并后的两个高峰时间段。</p>
+<h3 id="32">3.2  过滤高峰时间段</h3>
+<p>高峰时间段的过滤是指有些高峰时间段其极大值与极小值差距较小，对于我们举例中的客流量数据而言，纪客流量波动很小，此时该高峰时间段可视为平峰时段被过滤掉。</p>
+<p>高峰时间段的过滤主要是确定极大值与极小值比值的阈值，此处我们设定为1.5。</p>
+<div class="highlight"><pre><span></span><span class="c1"># 如果一个高峰时间段，最大客流量/最小客流量&lt;1.5,则删除这一高峰时间段</span>
+<span class="k">def</span> <span class="nf">filter_peak_period</span><span class="p">(</span><span class="n">peak_period</span><span class="p">,</span> <span class="n">flow_seq</span><span class="p">,</span> <span class="n">min_percent</span><span class="o">=</span><span class="mf">1.5</span><span class="p">):</span>
+    <span class="n">peak_period_filtered</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">period_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">peak_period</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">flow_seq</span><span class="p">[</span><span class="n">period_</span><span class="o">.</span><span class="n">start</span><span class="p">:</span><span class="n">period_</span><span class="o">.</span><span class="n">end</span><span class="p">])</span> <span class="o">/</span> 
+            <span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">flow_seq</span><span class="p">[</span><span class="n">period_</span><span class="o">.</span><span class="n">start</span><span class="p">:</span><span class="n">period_</span><span class="o">.</span><span class="n">end</span><span class="p">])</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">min_percent</span><span class="p">):</span>
+            <span class="n">peak_period_filtered</span> <span class="o">+=</span> <span class="p">[</span><span class="n">period_</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">peak_period_filtered</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">plot_period</span><span class="p">(</span><span class="n">periods</span><span class="p">,</span> <span class="n">flow</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="png" src="/images/客流量高峰时段确定/output_25_0.png"></p>
+<div class="highlight"><pre><span></span><span class="n">filter_period</span> <span class="o">=</span> <span class="n">filter_peak_period</span><span class="p">(</span><span class="n">periods</span><span class="p">,</span> <span class="n">flow</span><span class="p">)</span>
+<span class="n">plot_period</span><span class="p">(</span><span class="n">filter_period</span><span class="p">,</span> <span class="n">flow</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="png" src="/images/客流量高峰时段确定/output_26_0.png"></p>
+<p>可以看出，通过对第一组客流量数据高峰时间段进行过滤，第二个较为平缓的高峰时段被过滤掉。</p>
+<h3 id="33">3.3 高峰时段压缩</h3>
+<p>基于局部极小值确定的高峰时段通常位于一个较大的时间范围内，如何更为准确地定位高峰时段？可以考虑分别从左右两侧对高峰时段进行压缩。</p>
+<p>对于一个高峰时段，其左侧为增长阶段，右侧为下降阶段。高峰时段压缩的基本思想是去除掉客流量变化率较小的时段。例如左侧增长刚开始时增长阶段较为缓慢，可以从左侧进行压缩，收缩到增长率较大的时刻作为高峰时段起点。类似地，从右侧压缩，使高峰时段结束点收缩到下降率较大的时刻。</p>
+<p>此处，考虑基于变化率将增长阶段和下降阶段分别切分为快速变化与缓慢变化两个阶段，一种简单的方法是基于变化率进行聚类。定义如下计算变化率的函数（增长率与下降率）</p>
+<div class="highlight"><pre><span></span><span class="c1"># 计算某一时刻的增长率/下降率</span>
+<span class="k">def</span> <span class="nf">cal_increase_rate</span><span class="p">(</span><span class="n">time_index</span><span class="p">,</span> <span class="n">flow_seq</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">flow_seq</span><span class="p">[</span><span class="n">time_index</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">flow_seq</span><span class="p">[</span><span class="n">time_index</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">cal_decrease_rate</span><span class="p">(</span><span class="n">time_index</span><span class="p">,</span> <span class="n">flow_seq</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">flow_seq</span><span class="p">[</span><span class="n">time_index</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">flow_seq</span><span class="p">[</span><span class="n">time_index</span><span class="p">]</span>
+
+<span class="c1"># 计算整个高峰时段的增长率/下降率</span>
+<span class="k">def</span> <span class="nf">increase_rate</span><span class="p">(</span><span class="n">period</span><span class="p">,</span> <span class="n">flow_seq</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">time_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">period</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">period</span><span class="o">.</span><span class="n">peak</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">cal_increase_rate</span><span class="p">(</span><span class="n">time_index</span><span class="p">,</span> <span class="n">flow_seq</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">decrease_rate</span><span class="p">(</span><span class="n">period</span><span class="p">,</span> <span class="n">flow_seq</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">time_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">period</span><span class="o">.</span><span class="n">peak</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">period</span><span class="o">.</span><span class="n">end</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">cal_decrease_rate</span><span class="p">(</span><span class="n">time_index</span><span class="p">,</span> <span class="n">flow_seq</span><span class="p">)</span>
+</pre></div>
+
+
+<p>对于客流量变化高峰时段而言，其增长阶段在开始时较为缓慢，下降阶段在结束时较为缓慢。因此对增长阶段和下降阶段的时刻聚类为2类之后，删除左端增长缓慢阶段和右侧下降缓慢阶段即刻实现对高峰时段的压缩。</p>
+<div class="highlight"><pre><span></span><span class="c1"># 对增长率进行聚类（使用kmeans方法）</span>
+<span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">KMeans</span>
+<span class="k">def</span> <span class="nf">cluster_change_rate</span><span class="p">(</span><span class="n">rate</span><span class="p">):</span>
+    <span class="n">rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">rate</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">rate</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1"># 对某一高峰时段进行压缩</span>
+
+<span class="k">def</span> <span class="nf">shrink_period</span><span class="p">(</span><span class="n">period_</span><span class="p">,</span> <span class="n">flow_seq</span><span class="p">):</span>
+
+    <span class="n">increase_cluster</span> <span class="o">=</span> <span class="n">cluster_change_rate</span><span class="p">(</span><span class="n">increase_rate</span><span class="p">(</span><span class="n">period_</span><span class="p">,</span> <span class="n">flow_seq</span><span class="p">))</span>
+    <span class="n">decrease_cluster</span> <span class="o">=</span> <span class="n">cluster_change_rate</span><span class="p">(</span><span class="n">decrease_rate</span><span class="p">(</span><span class="n">period_</span><span class="p">,</span> <span class="n">flow_seq</span><span class="p">))</span>
+    <span class="n">increase_label</span> <span class="o">=</span> <span class="n">increase_cluster</span><span class="o">.</span><span class="n">labels_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">decrease_label</span> <span class="o">=</span> <span class="n">decrease_cluster</span><span class="o">.</span><span class="n">labels_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">increase_cluster</span><span class="o">.</span><span class="n">labels_</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">label</span> <span class="o">!=</span> <span class="n">increase_label</span><span class="p">:</span>
+            <span class="n">increase_index</span> <span class="o">=</span> <span class="n">index</span>
+            <span class="k">break</span>
+
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">decrease_cluster</span><span class="o">.</span><span class="n">labels_</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">label</span> <span class="o">!=</span> <span class="n">decrease_label</span><span class="p">:</span>
+            <span class="n">decrease_index</span> <span class="o">=</span> <span class="n">index</span>
+            <span class="k">break</span>
+
+    <span class="k">return</span> <span class="n">period</span><span class="p">(</span><span class="n">period_</span><span class="o">.</span><span class="n">start</span><span class="o">+</span><span class="n">increase_index</span><span class="p">,</span> <span class="n">period_</span><span class="o">.</span><span class="n">peak</span><span class="o">+</span><span class="n">decrease_index</span><span class="p">,</span> <span class="n">period_</span><span class="o">.</span><span class="n">peak</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">shrink_periods</span><span class="p">(</span><span class="n">peak_periods</span><span class="p">,</span> <span class="n">flow_seq</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">period_</span> <span class="ow">in</span> <span class="n">peak_periods</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">shrink_period</span><span class="p">(</span><span class="n">period_</span><span class="p">,</span> <span class="n">flow_seq</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">period_after_shrink</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">shrink_periods</span><span class="p">(</span><span class="n">filter_period</span><span class="p">,</span> <span class="n">flow</span><span class="p">))</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">plot_period</span><span class="p">(</span><span class="n">period_after_shrink</span><span class="p">,</span> <span class="n">flow</span><span class="p">)</span>
+</pre></div>
+
+
+<p><img alt="png" src="/images/客流量高峰时段确定/output_36_0.png"></p>
+<p>上图展示了经过压缩后的两个高峰时段。对比压缩前的高峰时段，可以看出，其范围更为精确。</p>
+            </section>
+
+            <section class="post-info">
+                <div class="post-share">
+                    <a class="twitter" href="https://twitter.com/share?text=地铁客流量高峰时间段识别&amp;url=/di-tie-ke-liu-liang-gao-feng-shi-jian-duan-shi-bie.html" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                    <i class="ic ic-twitter"></i><span class="hidden">Twitter</span>
+                    </a>
+                    <a class="facebook" href="https://www.facebook.com/sharer/sharer.php?u=/di-tie-ke-liu-liang-gao-feng-shi-jian-duan-shi-bie.html" onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                    <i class="ic ic-facebook"></i><span class="hidden">Facebook</span>
+                    </a>
+                    <a class="googleplus" href="https://plus.google.com/share?url=/di-tie-ke-liu-liang-gao-feng-shi-jian-duan-shi-bie.html" onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                    <i class="ic ic-googleplus"></i><span class="hidden">Google+</span>
+                    </a>
+                    <div class="clear"></div>
+                </div>
+
+                <aside class="post-tags">
+<a href="/tag/shu-ju-fen-xi.html">数据分析</a><a href="/tag/python.html">python</a>                </aside>
+
+                <div class="clear"></div>
+
+                <aside class="post-author">
+
+
+                        <figure class="post-author-avatar">
+                            <img src="/images/touxiang.jpeg" alt="xiaojia" />
+                        </figure>
+                    <div class="post-author-bio">
+                        <h4 class="post-author-name"><a href="/author/xiaojia.html">xiaojia</a></h4>
+                            <p class="post-author-about">北京交通大学交通运输规划与管理专业</p>
+                            <span class="post-author-location"><i class="ic ic-location"></i> Beijing</span>
+                        <!-- Social linkes in alphabet order. -->
+                            <span class="post-author-github"><a target="_blank" href="https://github.com/XiaojiaZhang"><i class="ic ic-link"></i> GitHub</a></span>
+                    </div>
+                    <div class="clear"></div>
+                </aside>
+
+                </section>
+
+
+                <aside class="post-nav">
+                    <a class="post-nav-prev" href="/test-file.html">
+                        <section class="post-nav-teaser">
+                            <i class="ic ic-arrow-right"></i>
+                                <h2 class="post-nav-title">Test File</h2>
+                            <p class="post-nav-excerpt">精通git第二版 first second third</p>
+                        </section>
+                    </a>
+                    <div class="clear"></div>
+                </aside>
+
+            </div>
+        </article>
+    </main>
+      <!-- TODO : Body class -->
+    <div id="body-class" style="display: none;" class=""></div>
+
+    <footer id="footer">
+      <div class="inner">
+        <section class="credits">
+
+
+          <span class="credits-theme">Theme <a href="https://github.com/arulrajnet/attila" rel="nofollow">Attila</a></span>
+          <span class="credits-software">Published with <a href="https://github.com/getpelican/pelican" rel="nofollow">Pelican</a></span>
+        </section>
+      </div>
+    </footer>
+  </section>
+
+  <script type="text/javascript" src="/theme/js/script.js"></script>
+
+</body>
+</html>
