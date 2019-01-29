@@ -55,8 +55,8 @@
 <meta property="og:locale" content="en_US"/>
 <meta property="og:url" content="/di-tie-ke-liu-liang-gao-feng-shi-jian-duan-shi-bie.html"/>
 <meta property="og:type" content="article"/>
-<meta property="article:published_time" content="2019-01-28 14:51:19.787309+00:00"/>
-<meta property="article:modified_time" content=""/>
+<meta property="article:published_time" content="2019-01-28 00:00:00+00:00"/>
+<meta property="article:modified_time" content="2019-01-29 00:00:00+00:00"/>
 <meta property="article:author" content="/author/xiaojia.html">
 <meta property="article:section" content="杂文"/>
 <meta property="article:tag" content="数据分析"/>
@@ -71,8 +71,8 @@
   "@type": "Article",
   "name": "地铁客流量高峰时间段识别",
   "headline": "地铁客流量高峰时间段识别",
-  "datePublished": "2019-01-28 14:51:19.787309+00:00",
-  "dateModified": "",
+  "datePublished": "2019-01-28 00:00:00+00:00",
+  "dateModified": "2019-01-29 00:00:00+00:00",
   "author": {
     "@type": "Person",
     "name": "xiaojia",
@@ -125,6 +125,7 @@
             | <time datetime="28/01/2019">28/01/2019</time>
         </span>
         <!-- TODO : Modified check -->
+            <span class="post-meta"> | Updated on 29/01/2019</span>
             <div class="post-cover cover" style="background-image: url('/images/客流量高峰时段确定/subway_flow.jpg')">
       </div>
     </header>
@@ -251,35 +252,56 @@
 <p>与之对应，如果一个高峰时间段从峰值开始刚下降不久就开始另一个高峰时间段，则该高峰时间段应该与其后一个高峰时段进行合并。</p>
 <p>高峰时间段的具体合并原则主要是对前述提到的“不久”这一持续时间的量化，对于此处提到的每半小时统计的客流量数据，可以将其最小持续时间设置为1小时。</p>
 <div class="highlight"><pre><span></span><span class="c1"># least_continue_increase=3, 表示从开始到达峰值至少持续1小时</span>
-<span class="k">def</span> <span class="nf">merge_period_increase</span><span class="p">(</span><span class="n">peak_period</span><span class="p">,</span> <span class="n">least_continue_increase</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
-    <span class="n">peak_period_copy</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">peak_period</span><span class="p">)</span>
-    <span class="n">remove_index</span> <span class="o">=</span> <span class="p">[]</span>
-
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">period_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">peak_period</span><span class="p">))[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
-        <span class="k">if</span> <span class="n">period_</span><span class="o">.</span><span class="n">peak</span> <span class="o">-</span> <span class="n">period_</span><span class="o">.</span><span class="n">start</span> <span class="o">&lt;</span> <span class="n">least_continue_increase</span><span class="p">:</span>
-            <span class="n">peak_period_copy</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">period</span><span class="p">(</span><span class="n">peak_period_copy</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">start</span><span class="p">,</span>
-                                           <span class="n">period_</span><span class="o">.</span><span class="n">end</span><span class="p">,</span>
-                                           <span class="n">peak_period_copy</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">peak</span><span class="p">)</span>
-            <span class="n">remove_index</span> <span class="o">+=</span> <span class="p">[</span><span class="n">i</span><span class="p">]</span>
-
-    <span class="n">reverse_peak_period</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">peak_period_copy</span><span class="p">))[</span><span class="n">i</span><span class="p">]</span>
-                                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">peak_period_copy</span><span class="p">))</span>
-                                <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">remove_index</span><span class="p">)</span> 
-    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">reverse_peak_period</span><span class="p">))</span>
-
-
 <span class="k">def</span> <span class="nf">merge_period_decrease</span><span class="p">(</span><span class="n">peak_period</span><span class="p">,</span> <span class="n">least_continus_decrease</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
-    <span class="n">peak_period_copy</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">peak_period</span><span class="p">)</span>
-    <span class="n">remove_index</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">peak_period</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">peak_period</span>
 
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">period_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">peak_period_copy</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
-        <span class="k">if</span> <span class="n">period_</span><span class="o">.</span><span class="n">end</span> <span class="o">-</span> <span class="n">period_</span><span class="o">.</span><span class="n">peak</span> <span class="o">&lt;</span> <span class="n">least_continus_decrease</span><span class="p">:</span>
-            <span class="n">peak_period_copy</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">period</span><span class="p">(</span><span class="n">period</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> 
-                                           <span class="n">peak_period_copy</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">end</span><span class="p">,</span>
-                                           <span class="n">peak_period_copy</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">peak</span><span class="p">)</span>
-            <span class="n">remove_index</span> <span class="o">+=</span> <span class="p">[</span><span class="n">i</span><span class="p">]</span>
-    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">peak_period_copy</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">peak_period_copy</span><span class="p">))</span>
-                 <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">remove_index</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">period_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">peak_period</span><span class="p">):</span>
+            <span class="c1"># 如果遍历到最后一个，则终止，返回当前peak_period</span>
+            <span class="k">if</span> <span class="n">index</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">peak_period</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">peak_period</span>
+            <span class="c1"># 如果发现一个可以合并的高峰时段，则进行合并，并对合并后的新结果递归合并</span>
+            <span class="k">if</span> <span class="n">period_</span><span class="o">.</span><span class="n">end</span> <span class="o">-</span> <span class="n">period_</span><span class="o">.</span><span class="n">peak</span> <span class="o">&lt;</span> <span class="n">least_continus_decrease</span><span class="p">:</span>
+
+                <span class="n">new_peak_period</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">peak_period</span><span class="p">)</span>
+                <span class="n">new_peak_period</span><span class="p">[</span><span class="n">index</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">period</span><span class="p">(</span><span class="n">period_</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> 
+                                           <span class="n">peak_period</span><span class="p">[</span><span class="n">index</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">end</span><span class="p">,</span>
+                                           <span class="n">peak_period</span><span class="p">[</span><span class="n">index</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">peak</span><span class="p">)</span>
+                <span class="n">new_peak_period</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">merge_decrease</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">new_peak_period</span><span class="p">),</span> <span class="n">least_continus_decrease</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">merge_period_increase</span><span class="p">(</span><span class="n">peak_period</span><span class="p">,</span> <span class="n">least_continue_increase</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">merge_recuriseve</span><span class="p">(</span><span class="n">peak_period</span><span class="p">,</span> <span class="n">least_continue_increase</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">peak_period</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">peak_period</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">period_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">peak_period</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">index</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">peak_period</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">peak_period</span>
+
+                <span class="k">if</span> <span class="n">period_</span><span class="o">.</span><span class="n">peak</span> <span class="o">-</span> <span class="n">period_</span><span class="o">.</span><span class="n">start</span> <span class="o">&lt;</span> <span class="n">least_continue_increase</span><span class="p">:</span>
+                    <span class="n">new_peak_period</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">peak_period</span><span class="p">)</span>
+                    <span class="n">new_peak_period</span><span class="p">[</span><span class="n">index</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">period</span><span class="p">(</span><span class="n">peak_period</span><span class="p">[</span><span class="n">index</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">start</span><span class="p">,</span>
+                                                      <span class="n">period_</span><span class="o">.</span><span class="n">end</span><span class="p">,</span>
+                                                      <span class="n">peak_period</span><span class="p">[</span><span class="n">index</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">peak</span><span class="p">)</span>
+                    <span class="n">new_peak_period</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">merge_period_increase</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">new_peak_period</span><span class="p">),</span> <span class="n">least_continue_increase</span><span class="p">)</span>
+
+    <span class="n">reversed_peak_period</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">peak_period</span><span class="p">))</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">merge_recuriseve</span><span class="p">(</span><span class="n">reversed_peak_period</span><span class="p">,</span> <span class="n">least_continue_increase</span><span class="p">)))</span>
+
+<span class="k">def</span> <span class="nf">merge_period</span><span class="p">(</span><span class="n">peak_period</span><span class="p">,</span> <span class="n">least_continue_increase</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">least_continus_decrease</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="n">decrease_increase</span> <span class="o">=</span> <span class="n">merge_period_decrease</span><span class="p">(</span>
+        <span class="n">merge_period_increase</span><span class="p">(</span><span class="n">peak_period</span><span class="p">,</span> <span class="n">least_continue_increase</span><span class="p">),</span> <span class="n">least_continus_decrease</span><span class="p">)</span>
+    <span class="n">increase_decrease</span> <span class="o">=</span> <span class="n">merge_period_increase</span><span class="p">(</span>
+        <span class="n">merge_period_decrease</span><span class="p">(</span><span class="n">peak_period</span><span class="p">,</span> <span class="n">least_continus_decrease</span><span class="p">),</span> <span class="n">least_continue_increase</span><span class="p">)</span>
+
+    <span class="c1"># 不同的合并顺序可能产生略微不同的合并结果，此处选择合并后高峰时段个数最少的合并结果</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">decrease_increase</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">increase_decrease</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">decrease_increase</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">increase_decrease</span>
 
 <span class="n">merge_period</span> <span class="o">=</span> <span class="n">merge_period_decrease</span><span class="p">(</span><span class="n">merge_period_increase</span><span class="p">(</span><span class="n">periods_2</span><span class="p">))</span>
 <span class="n">plot_period</span><span class="p">(</span><span class="n">merge_period</span><span class="p">,</span> <span class="n">flow_2</span><span class="p">)</span>
