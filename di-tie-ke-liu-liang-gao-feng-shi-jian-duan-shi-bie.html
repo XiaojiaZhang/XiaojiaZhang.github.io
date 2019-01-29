@@ -350,11 +350,11 @@
     <span class="k">return</span> <span class="n">flow_seq</span><span class="p">[</span><span class="n">time_index</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">flow_seq</span><span class="p">[</span><span class="n">time_index</span><span class="p">]</span>
 
 <span class="c1"># 计算整个高峰时段的增长率/下降率</span>
-<span class="k">def</span> <span class="nf">increase_rate</span><span class="p">(</span><span class="n">period</span><span class="p">,</span> <span class="n">flow_seq</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">cal_increase_rates</span><span class="p">(</span><span class="n">period</span><span class="p">,</span> <span class="n">flow_seq</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">time_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">period</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">period</span><span class="o">.</span><span class="n">peak</span><span class="p">):</span>
         <span class="k">yield</span> <span class="n">cal_increase_rate</span><span class="p">(</span><span class="n">time_index</span><span class="p">,</span> <span class="n">flow_seq</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">decrease_rate</span><span class="p">(</span><span class="n">period</span><span class="p">,</span> <span class="n">flow_seq</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">cal_decrease_rates</span><span class="p">(</span><span class="n">period</span><span class="p">,</span> <span class="n">flow_seq</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">time_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">period</span><span class="o">.</span><span class="n">peak</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">period</span><span class="o">.</span><span class="n">end</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
         <span class="k">yield</span> <span class="n">cal_decrease_rate</span><span class="p">(</span><span class="n">time_index</span><span class="p">,</span> <span class="n">flow_seq</span><span class="p">)</span>
 </pre></div>
@@ -371,24 +371,59 @@
 
 <div class="highlight"><pre><span></span><span class="c1"># 对某一高峰时段进行压缩</span>
 
+<span class="c1"># 找出对应高变化率的聚类标签</span>
+<span class="k">def</span> <span class="nf">find_high_change_rate_label</span><span class="p">(</span><span class="n">cluster_label</span><span class="p">,</span> <span class="n">change_rate</span><span class="p">):</span>
+    <span class="n">rate_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cluster_label</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rate_dict</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">change_rate</span><span class="p">[</span><span class="n">index</span><span class="p">]]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">rate_dict</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">change_rate</span><span class="p">[</span><span class="n">index</span><span class="p">]]</span>
+
+    <span class="n">high_rate_label</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">rate_dict</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">sum</span><span class="p">(</span><span class="n">rate_dict</span><span class="p">[</span><span class="n">x</span><span class="p">])</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">rate_dict</span><span class="p">[</span><span class="n">x</span><span class="p">]))</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">rate_dict</span><span class="p">[</span><span class="n">high_rate_label</span><span class="p">]),</span> <span class="n">high_rate_label</span>
+
+<span class="c1"># 确定高峰期的收缩截断点</span>
+<span class="c1"># 截断点以内至少包括一半的高变化率时刻，如果其后仍有连续的高变化率时刻，则顺次后移</span>
+<span class="k">def</span> <span class="nf">find_intercept_point</span><span class="p">(</span><span class="n">cluster_label</span><span class="p">,</span> <span class="n">high_rate_label</span><span class="p">,</span> <span class="n">length_high_rate_label</span><span class="p">):</span>
+    <span class="n">half_length</span> <span class="o">=</span> <span class="n">length_high_rate_label</span> <span class="o">//</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="n">find_len</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cluster_label</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">label</span> <span class="o">==</span> <span class="n">high_rate_label</span><span class="p">:</span>
+            <span class="n">find_len</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">find_len</span> <span class="o">==</span> <span class="n">half_length</span><span class="p">:</span>
+            <span class="n">intercept_point</span> <span class="o">=</span> <span class="n">index</span>
+            <span class="k">break</span>
+
+    <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">intercept_point</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">cluster_label</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">cluster_label</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">==</span> <span class="n">high_rate_label</span><span class="p">:</span>
+            <span class="n">intercept_point</span> <span class="o">=</span> <span class="n">index</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">break</span>
+    <span class="k">return</span> <span class="n">intercept_point</span>
+
+
 <span class="k">def</span> <span class="nf">shrink_period</span><span class="p">(</span><span class="n">period_</span><span class="p">,</span> <span class="n">flow_seq</span><span class="p">):</span>
 
-    <span class="n">increase_cluster</span> <span class="o">=</span> <span class="n">cluster_change_rate</span><span class="p">(</span><span class="n">increase_rate</span><span class="p">(</span><span class="n">period_</span><span class="p">,</span> <span class="n">flow_seq</span><span class="p">))</span>
-    <span class="n">decrease_cluster</span> <span class="o">=</span> <span class="n">cluster_change_rate</span><span class="p">(</span><span class="n">decrease_rate</span><span class="p">(</span><span class="n">period_</span><span class="p">,</span> <span class="n">flow_seq</span><span class="p">))</span>
-    <span class="n">increase_label</span> <span class="o">=</span> <span class="n">increase_cluster</span><span class="o">.</span><span class="n">labels_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">decrease_label</span> <span class="o">=</span> <span class="n">decrease_cluster</span><span class="o">.</span><span class="n">labels_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">increase_rate</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">cal_increase_rates</span><span class="p">(</span><span class="n">period_</span><span class="p">,</span> <span class="n">flow_seq</span><span class="p">))</span>
+    <span class="n">decrease_rate</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">cal_decrease_rates</span><span class="p">(</span><span class="n">period_</span><span class="p">,</span> <span class="n">flow_seq</span><span class="p">))</span>
 
-    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">increase_cluster</span><span class="o">.</span><span class="n">labels_</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">label</span> <span class="o">!=</span> <span class="n">increase_label</span><span class="p">:</span>
-            <span class="n">increase_index</span> <span class="o">=</span> <span class="n">index</span>
-            <span class="k">break</span>
+    <span class="n">increase_cluster</span> <span class="o">=</span> <span class="n">cluster_change_rate</span><span class="p">(</span><span class="n">increase_rate</span><span class="p">)</span>
+    <span class="n">decrease_cluster</span> <span class="o">=</span> <span class="n">cluster_change_rate</span><span class="p">(</span><span class="n">decrease_rate</span><span class="p">)</span>
 
-    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">decrease_cluster</span><span class="o">.</span><span class="n">labels_</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">label</span> <span class="o">!=</span> <span class="n">decrease_label</span><span class="p">:</span>
-            <span class="n">decrease_index</span> <span class="o">=</span> <span class="n">index</span>
-            <span class="k">break</span>
+    <span class="n">inc_len</span><span class="p">,</span> <span class="n">increase_high_rate_label</span> <span class="o">=</span> <span class="n">find_high_change_rate_label</span><span class="p">(</span><span class="n">increase_cluster</span><span class="p">,</span> <span class="n">increase_rate</span><span class="p">)</span>
+    <span class="n">dec_len</span><span class="p">,</span> <span class="n">decrease_high_rate_label</span> <span class="o">=</span> <span class="n">find_high_change_rate_label</span><span class="p">(</span><span class="n">decrease_cluster</span><span class="p">,</span> <span class="n">decrease_rate</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">period</span><span class="p">(</span><span class="n">period_</span><span class="o">.</span><span class="n">start</span><span class="o">+</span><span class="n">increase_index</span><span class="p">,</span> <span class="n">period_</span><span class="o">.</span><span class="n">peak</span><span class="o">+</span><span class="n">decrease_index</span><span class="p">,</span> <span class="n">period_</span><span class="o">.</span><span class="n">peak</span><span class="p">)</span>
+    <span class="n">increase_intercept_point</span> <span class="o">=</span> <span class="n">find_intercept_point</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">increase_cluster</span><span class="p">)),</span>
+                                                    <span class="n">increase_high_rate_label</span><span class="p">,</span> <span class="n">inc_len</span><span class="p">)</span>
+    <span class="n">decrease_intercept_point</span> <span class="o">=</span> <span class="n">find_intercept_point</span><span class="p">(</span><span class="n">decrease_cluster</span><span class="p">,</span> 
+                                                    <span class="n">decrease_high_rate_label</span><span class="p">,</span> <span class="n">dec_len</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">period</span><span class="p">(</span><span class="n">period_</span><span class="o">.</span><span class="n">peak</span><span class="o">-</span><span class="n">increase_intercept_point</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> 
+                  <span class="n">period_</span><span class="o">.</span><span class="n">peak</span><span class="o">+</span><span class="n">decrease_intercept_point</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> 
+                  <span class="n">period_</span><span class="o">.</span><span class="n">peak</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">shrink_periods</span><span class="p">(</span><span class="n">peak_periods</span><span class="p">,</span> <span class="n">flow_seq</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">period_</span> <span class="ow">in</span> <span class="n">peak_periods</span><span class="p">:</span>
