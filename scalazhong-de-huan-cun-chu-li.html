@@ -167,7 +167,7 @@
 
 
 <p>为了实现缓存，基于闭包方案，可以写出如下函数：</p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="n">memorizedIsPrime</span><span class="k">:</span> <span class="kt">Int</span> <span class="o">=&gt;</span> <span class="nc">Boolean</span> <span class="k">=</span> <span class="o">{</span>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="n">memoizedIsPrime</span><span class="k">:</span> <span class="kt">Int</span> <span class="o">=&gt;</span> <span class="nc">Boolean</span> <span class="k">=</span> <span class="o">{</span>
 
   <span class="k">def</span> <span class="n">isPrime</span><span class="o">(</span><span class="n">num</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span><span class="k">:</span> <span class="kt">Boolean</span> <span class="o">=</span> <span class="o">{</span>
     <span class="mi">2</span> <span class="n">to</span> <span class="o">(</span><span class="n">num</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="n">forall</span> <span class="o">(</span><span class="n">x</span> <span class="k">=&gt;</span> <span class="n">num</span> <span class="o">%</span> <span class="n">x</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">)</span>
@@ -188,7 +188,7 @@
 
 
 <p>在上例的实现中，我们将计算函数<code>isPrime</code>主体放到了<code>memoizedIsPrime</code>内部，<code>memoizedIsPrime</code>函数返回了一个函数，这个结果函数将成为我们后续进行素数与否计算的执行体。</p>
-<div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">isPrime2</span> <span class="k">=</span> <span class="n">memorizedIsPrime</span>
+<div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">isPrime2</span> <span class="k">=</span> <span class="n">memoizedIsPrime</span>
 </pre></div>
 
 
@@ -214,7 +214,7 @@
 <p>此处的关键是通过使用闭包，isPrime2函数能够访问并修改其上层函数中cache映射的值。</p>
 <h3 id="3">3.基于闭包的通用缓存方案</h3>
 <p>使用闭包的通用缓存方案处理思路即通过对原计算主体函数进行包装，返回一个新的拥有同样函数签名的函数。</p>
-<div class="highlight"><pre><span></span><span class="k">def</span> <span class="n">memorizedFun</span><span class="o">[</span><span class="kt">K</span>, <span class="kt">V</span><span class="o">](</span><span class="n">f</span><span class="k">:</span> <span class="kt">K</span> <span class="o">=&gt;</span> <span class="n">V</span><span class="o">)</span><span class="k">:</span> <span class="kt">K</span> <span class="o">=&gt;</span> <span class="n">V</span> <span class="k">=</span> <span class="o">{</span>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="n">memoizedFun</span><span class="o">[</span><span class="kt">K</span>, <span class="kt">V</span><span class="o">](</span><span class="n">f</span><span class="k">:</span> <span class="kt">K</span> <span class="o">=&gt;</span> <span class="n">V</span><span class="o">)</span><span class="k">:</span> <span class="kt">K</span> <span class="o">=&gt;</span> <span class="n">V</span> <span class="k">=</span> <span class="o">{</span>
     <span class="k">val</span> <span class="n">cache</span> <span class="k">=</span> <span class="n">collection</span><span class="o">.</span><span class="n">mutable</span><span class="o">.</span><span class="nc">Map</span><span class="o">.</span><span class="n">empty</span><span class="o">[</span><span class="kt">K</span>, <span class="kt">V</span><span class="o">]</span>
 
     <span class="n">num</span> <span class="k">=&gt;</span> <span class="n">cache</span><span class="o">.</span><span class="n">getOrElse</span><span class="o">(</span><span class="n">num</span><span class="o">,</span>
@@ -224,7 +224,7 @@
 </pre></div>
 
 
-<div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">isPrime3</span> <span class="k">=</span> <span class="n">memorizedFun</span><span class="o">(</span><span class="n">isPrime</span><span class="o">)</span>
+<div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">isPrime3</span> <span class="k">=</span> <span class="n">memoizedFun</span><span class="o">(</span><span class="n">isPrime</span><span class="o">)</span>
 </pre></div>
 
 
@@ -246,8 +246,17 @@ Boolean = false
 </pre></div>
 
 
-<p>在上述实现中，memorizedFun函数接受拥有一个入参的主体计算函数，基于该通用方案，我们定义了了<code>isPrime3</code>函数，调用结果显示，该函数支持缓存。</p>
+<p>在上述实现中，memoizedFun函数接受拥有一个入参的主体计算函数，基于该通用方案，我们定义了了<code>isPrime3</code>函数，调用结果显示，该函数支持缓存。</p>
 <p>本文主要参考<a href="https://medium.com/musings-on-functional-programming/scala-optimizing-expensive-functions-with-memoization-c05b781ae826">Scala: Optimizing expensive functions with Memoization</a></p>
+<p>注： 是否注意到在整篇文章中，我们使用的是单词<strong>memoized</strong>而不是<strong>memorized</strong>这个单词。一开始我并没有注意到这个问题。经过google发现，<strong>memoized</strong>虽然不是一个单词，但它是计算机中专门用于描述缓存机制的一个术语。
+其中一段关于memoization与memorization的差异的解释如下：</p>
+<blockquote>
+<p>Memorization implies that you studied ahead of time. E.g. I memorized the Fibonacci numbers, so &gt;when you ask me "What's the 24th Fibonacci number?" I can instantly say 28657.</p>
+<p>Memoization is remembering something after you did it once the slow way. When you ask me "What's the 24th Fibonacci number?" I have to go calculate it, but I remember the answer, so the second time you ask me, I can say it right away.</p>
+</blockquote>
+<p>具体的讨论可以参考以下两处链接：</p>
+<p><a href="https://en.wikipedia.org/wiki/Memoization">Wiki: Memoization</a></p>
+<p><a href="https://stackoverflow.com/questions/45242851/why-memoization-instead-of-memorization">stackoverflow: Why memoization instead of memoRization?</a></p>
             </section>
 
             <section class="post-info">
