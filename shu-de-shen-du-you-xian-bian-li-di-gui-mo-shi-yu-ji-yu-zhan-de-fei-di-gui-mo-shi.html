@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html" charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+
+  <title>树的深度优先遍历——递归模式与基于栈的非递归模式</title>
+
+
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="origin" />
+  <meta name="generator" content="Pelican" />
+  <link href="/" rel="canonical" />
+
+  <!-- Feed -->
+
+  <link href="/theme/css/style.css" type="text/css" rel="stylesheet" />
+
+  <!-- Code highlight color scheme -->
+      <link href="/theme/css/code_blocks/github.css" rel="stylesheet">
+
+
+  <!-- Custom fonts -->
+  <link href='https://fonts.googleapis.com/css?family=Montserrat:400,300' rel='stylesheet' type='text/css' />
+  <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet" type="text/css" />
+
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+  <![endif]-->
+
+
+  <link href="/shu-de-shen-du-you-xian-bian-li-di-gui-mo-shi-yu-ji-yu-zhan-de-fei-di-gui-mo-shi.html" rel="canonical" />
+
+
+    <meta name="author" content="xiaojia">
+
+    <meta name="tags" content="scala">
+    <meta name="tags" content="数据结构">
+
+
+
+
+<!-- Open Graph -->
+<meta property="og:site_name" content="Stay Hungry, Stay Foolish"/>
+<meta property="og:title" content="树的深度优先遍历——递归模式与基于栈的非递归模式"/>
+<meta property="og:description" content=""/>
+<meta property="og:locale" content="en_US"/>
+<meta property="og:url" content="/shu-de-shen-du-you-xian-bian-li-di-gui-mo-shi-yu-ji-yu-zhan-de-fei-di-gui-mo-shi.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2019-04-14 00:00:00+00:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="/author/xiaojia.html">
+<meta property="article:section" content="数据结构"/>
+<meta property="article:tag" content="scala"/>
+<meta property="article:tag" content="数据结构"/>
+<meta property="og:image" content="/images/data_structure.jpg">
+
+<!-- Twitter Card -->
+
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "Article",
+  "name": "树的深度优先遍历——递归模式与基于栈的非递归模式",
+  "headline": "树的深度优先遍历——递归模式与基于栈的非递归模式",
+  "datePublished": "2019-04-14 00:00:00+00:00",
+  "dateModified": "",
+  "author": {
+    "@type": "Person",
+    "name": "xiaojia",
+    "url": "/author/xiaojia.html"
+  },
+  "image": "/images/data_structure.jpg",
+  "url": "/shu-de-shen-du-you-xian-bian-li-di-gui-mo-shi-yu-ji-yu-zhan-de-fei-di-gui-mo-shi.html",
+  "description": ""
+}
+</script>
+</head>
+<!-- TODO : Body class -->
+<body class="home-template">
+
+<nav id="menu">
+  <a class="close-button">Close</a>
+  <div class="nav-wrapper">
+    <p class="nav-label">Menu</p>
+    <ul>
+          <li><a href="/archives.html" role="presentation">Archive</a></li>
+          <li><a href="/category/shu-ping.html" role="presentation">书评</a></li>
+          <li><a href="/category/za-wen.html" role="presentation">杂文</a></li>
+          <li><a href="/category/python.html" role="presentation">python</a></li>
+          <li><a href="/category/ji-suan-ji-wang-luo.html" role="presentation">计算机网络</a></li>
+          <li><a href="/category/scala.html" role="presentation">scala</a></li>
+
+              <li role="presentation"><a href="/pages/about-me.html">About Me</a></li>
+
+    </ul>
+  </div>
+</nav>
+    <!-- Progressbar -->
+    <div class="progress-container">
+        <span class="progress-bar"></span>
+    </div>
+
+    <!-- Page Header -->
+    <!-- Set your background image for this header on the line below. -->
+    <header id="post-header" class="has-cover">
+      <div class="inner">
+        <nav id="navigation">
+            <span id="home-button" class="nav-button">
+                <a class="home-button" href="/" title="Home"><i class="ic ic-arrow-left"></i> Home</a>
+            </span>
+          <span id="menu-button" class="nav-button">
+            <a class="menu-button"><i class="ic ic-menu"></i> Menu</a>
+          </span>
+        </nav>
+        <h1 class="post-title">树的深度优先遍历——递归模式与基于栈的非递归模式</h1>
+        <!-- TODO : Proper class for headline -->
+        <span class="post-meta">
+                <a href="/author/xiaojia.html">xiaojia</a>
+            | <time datetime="14/04/2019">14/04/2019</time>
+        </span>
+        <!-- TODO : Modified check -->
+            <div class="post-cover cover" style="background-image: url('/images/data_structure.jpg')">
+      </div>
+    </header>
+
+  <section id="wrapper">
+    <a class="hidden-close"></a>
+
+    <!-- Post content -->
+    <main class="content" role="main">
+        <article class="post">
+        <div class="inner">
+            <section class="post-content">
+                <div class="toc">
+<ul>
+<li><a href="#1">1. 递归模式</a><ul>
+<li><a href="#11">1.1 前序遍历</a></li>
+<li><a href="#12">1.2 后序遍历</a></li>
+</ul>
+</li>
+<li><a href="#2">2. 基于栈的非递归模式</a><ul>
+<li><a href="#21">2.1 前序遍历</a></li>
+<li><a href="#22">2.2 后序遍历</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p>对树结构的遍历可分为深度优先与广度优先两种方式，其中树结构的广度优先遍历又称为层序遍历。根据父节点相对于子节点的遍历先后顺序，深度优先又可分为前序遍历、中序遍历与后序遍历，本文展示如何使用递归模式与非递归模式对树进行深度优先遍历。</p>
+<p>为便于讲解，本文使用一般情形的树结构，即一个树节点可拥有0个至任意多个子节点。对拥有任意多子节点的树结构，其中序遍历结果无法准确定义，因此此处仅讲解前序遍历与后序遍历两种遍历顺序。</p>
+<p>本文，定义如下类型树节点，每一树节点对象包含两个字段，data为该节点数据域，children为子节点序列。</p>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">TreeNode</span><span class="o">[</span><span class="kt">T</span><span class="o">](</span><span class="k">val</span> <span class="n">data</span><span class="k">:</span> <span class="kt">T</span><span class="o">,</span> <span class="k">val</span> <span class="n">children</span><span class="k">:</span> <span class="kt">Seq</span><span class="o">[</span><span class="kt">TreeNode</span><span class="o">[</span><span class="kt">T</span><span class="o">]])</span>
+</pre></div>
+
+
+<p><img alt="树结构" src="/images/tree.png"></p>
+<p>根据树节点类定义，创建上图所示各个树节点。</p>
+<div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">node1</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">TreeNode</span><span class="o">[</span><span class="kt">Char</span><span class="o">](</span><span class="sc">&#39;I&#39;</span><span class="o">,</span> <span class="nc">List</span><span class="o">[</span><span class="kt">TreeNode</span><span class="o">[</span><span class="kt">Char</span><span class="o">]]())</span>
+<span class="k">val</span> <span class="n">node2</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">TreeNode</span><span class="o">[</span><span class="kt">Char</span><span class="o">](</span><span class="sc">&#39;J&#39;</span><span class="o">,</span> <span class="nc">List</span><span class="o">[</span><span class="kt">TreeNode</span><span class="o">[</span><span class="kt">Char</span><span class="o">]]())</span>
+<span class="k">val</span> <span class="n">node3</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">TreeNode</span><span class="o">[</span><span class="kt">Char</span><span class="o">](</span><span class="sc">&#39;K&#39;</span><span class="o">,</span> <span class="nc">List</span><span class="o">[</span><span class="kt">TreeNode</span><span class="o">[</span><span class="kt">Char</span><span class="o">]]())</span>
+<span class="k">val</span> <span class="n">node4</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">TreeNode</span><span class="o">[</span><span class="kt">Char</span><span class="o">](</span><span class="sc">&#39;L&#39;</span><span class="o">,</span> <span class="nc">List</span><span class="o">[</span><span class="kt">TreeNode</span><span class="o">[</span><span class="kt">Char</span><span class="o">]]())</span>
+<span class="k">val</span> <span class="n">node5</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">TreeNode</span><span class="o">[</span><span class="kt">Char</span><span class="o">](</span><span class="sc">&#39;M&#39;</span><span class="o">,</span> <span class="nc">List</span><span class="o">[</span><span class="kt">TreeNode</span><span class="o">[</span><span class="kt">Char</span><span class="o">]]())</span>
+<span class="k">val</span> <span class="n">node6</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">TreeNode</span><span class="o">[</span><span class="kt">Char</span><span class="o">](</span><span class="sc">&#39;D&#39;</span><span class="o">,</span> <span class="nc">List</span><span class="o">[</span><span class="kt">TreeNode</span><span class="o">[</span><span class="kt">Char</span><span class="o">]](</span><span class="n">node1</span><span class="o">))</span>
+<span class="k">val</span> <span class="n">node7</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">TreeNode</span><span class="o">[</span><span class="kt">Char</span><span class="o">](</span><span class="sc">&#39;E&#39;</span><span class="o">,</span> <span class="nc">List</span><span class="o">[</span><span class="kt">TreeNode</span><span class="o">[</span><span class="kt">Char</span><span class="o">]](</span><span class="n">node2</span><span class="o">))</span>
+<span class="k">val</span> <span class="n">node8</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">TreeNode</span><span class="o">[</span><span class="kt">Char</span><span class="o">](</span><span class="sc">&#39;F&#39;</span><span class="o">,</span> <span class="nc">List</span><span class="o">[</span><span class="kt">TreeNode</span><span class="o">[</span><span class="kt">Char</span><span class="o">]]())</span>
+<span class="k">val</span> <span class="n">node9</span><span class="k">=</span> <span class="k">new</span> <span class="nc">TreeNode</span><span class="o">[</span><span class="kt">Char</span><span class="o">](</span><span class="sc">&#39;G&#39;</span><span class="o">,</span> <span class="nc">List</span><span class="o">[</span><span class="kt">TreeNode</span><span class="o">[</span><span class="kt">Char</span><span class="o">]](</span><span class="n">node3</span><span class="o">,</span> <span class="n">node4</span><span class="o">,</span> <span class="n">node5</span><span class="o">))</span>
+<span class="k">val</span> <span class="n">node10</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">TreeNode</span><span class="o">[</span><span class="kt">Char</span><span class="o">](</span><span class="sc">&#39;H&#39;</span><span class="o">,</span> <span class="nc">List</span><span class="o">[</span><span class="kt">TreeNode</span><span class="o">[</span><span class="kt">Char</span><span class="o">]]())</span>
+<span class="k">val</span> <span class="n">node11</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">TreeNode</span><span class="o">[</span><span class="kt">Char</span><span class="o">](</span><span class="sc">&#39;B&#39;</span><span class="o">,</span> <span class="nc">List</span><span class="o">[</span><span class="kt">TreeNode</span><span class="o">[</span><span class="kt">Char</span><span class="o">]](</span><span class="n">node6</span><span class="o">,</span> <span class="n">node7</span><span class="o">,</span> <span class="n">node8</span><span class="o">))</span>
+<span class="k">val</span> <span class="n">node12</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">TreeNode</span><span class="o">[</span><span class="kt">Char</span><span class="o">](</span><span class="sc">&#39;C&#39;</span><span class="o">,</span> <span class="nc">List</span><span class="o">[</span><span class="kt">TreeNode</span><span class="o">[</span><span class="kt">Char</span><span class="o">]](</span><span class="n">node9</span><span class="o">,</span> <span class="n">node10</span><span class="o">))</span>
+<span class="k">val</span> <span class="n">node13</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">TreeNode</span><span class="o">[</span><span class="kt">Char</span><span class="o">](</span><span class="sc">&#39;A&#39;</span><span class="o">,</span> <span class="nc">List</span><span class="o">[</span><span class="kt">TreeNode</span><span class="o">[</span><span class="kt">Char</span><span class="o">]](</span><span class="n">node11</span><span class="o">,</span> <span class="n">node12</span><span class="o">))</span>
+</pre></div>
+
+
+<p>nodel13代表树的根节点。</p>
+<h2 id="1">1. 递归模式</h2>
+<h3 id="11">1.1 前序遍历</h3>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="n">preOrder</span><span class="o">[</span><span class="kt">T</span>, <span class="kt">V</span><span class="o">](</span><span class="n">root</span><span class="k">:</span><span class="kt">TreeNode</span><span class="o">[</span><span class="kt">T</span><span class="o">],</span> <span class="n">fun</span><span class="k">:</span> <span class="kt">T</span> <span class="o">=&gt;</span> <span class="n">V</span><span class="o">)</span><span class="k">:</span> <span class="kt">List</span><span class="o">[</span><span class="kt">V</span><span class="o">]</span><span class="k">=</span> <span class="o">{</span>
+  <span class="k">val</span> <span class="n">res</span> <span class="k">=</span> <span class="n">fun</span><span class="o">(</span><span class="n">root</span><span class="o">.</span><span class="n">data</span><span class="o">)</span>
+  <span class="n">res</span> <span class="o">::</span> <span class="n">root</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">toList</span><span class="o">.</span><span class="n">flatMap</span><span class="o">(</span><span class="n">node</span> <span class="k">=&gt;</span> <span class="n">preOrder</span><span class="o">(</span><span class="n">node</span><span class="o">,</span> <span class="n">fun</span><span class="o">))</span>
+<span class="o">}</span>
+
+<span class="c1">// 前序遍历树节点</span>
+<span class="k">val</span> <span class="n">res</span> <span class="k">=</span> <span class="n">preOrder</span><span class="o">[</span><span class="kt">Char</span>, <span class="kt">Char</span><span class="o">](</span><span class="n">node13</span><span class="o">,</span> <span class="n">x</span> <span class="k">=&gt;</span> <span class="n">x</span><span class="o">)</span>
+<span class="n">res</span><span class="o">.</span><span class="n">foldLeft</span><span class="o">(</span><span class="s">&quot;start:&quot;</span><span class="o">)(</span><span class="k">_</span> <span class="o">+</span> <span class="s">&quot;-&gt;&quot;</span> <span class="o">+</span> <span class="k">_</span><span class="o">.</span><span class="n">toString</span><span class="o">)</span>
+</pre></div>
+
+
+<p>"start:-&gt;A-&gt;B-&gt;D-&gt;I-&gt;E-&gt;J-&gt;F-&gt;C-&gt;G-&gt;K-&gt;L-&gt;M-&gt;H"</p>
+<h3 id="12">1.2 后序遍历</h3>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="n">postOrder</span><span class="o">[</span><span class="kt">T</span>, <span class="kt">V</span><span class="o">](</span><span class="n">root</span><span class="k">:</span><span class="kt">TreeNode</span><span class="o">[</span><span class="kt">T</span><span class="o">],</span> <span class="n">fun</span><span class="k">:</span> <span class="kt">T</span> <span class="o">=&gt;</span> <span class="n">V</span><span class="o">)</span><span class="k">:</span> <span class="kt">List</span><span class="o">[</span><span class="kt">V</span><span class="o">]</span><span class="k">=</span> <span class="o">{</span>
+  <span class="n">root</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">toList</span><span class="o">.</span><span class="n">flatMap</span><span class="o">(</span><span class="n">node</span> <span class="k">=&gt;</span> <span class="n">postOrder</span><span class="o">(</span><span class="n">node</span><span class="o">,</span> <span class="n">fun</span><span class="o">))</span> <span class="o">:+</span> <span class="n">fun</span><span class="o">(</span><span class="n">root</span><span class="o">.</span><span class="n">data</span><span class="o">)</span>
+<span class="o">}</span>
+
+<span class="c1">// 前序遍历树节点</span>
+<span class="k">val</span> <span class="n">res</span> <span class="k">=</span> <span class="n">postOrder</span><span class="o">[</span><span class="kt">Char</span>, <span class="kt">Char</span><span class="o">](</span><span class="n">node13</span><span class="o">,</span> <span class="n">x</span> <span class="k">=&gt;</span> <span class="n">x</span><span class="o">)</span>
+<span class="n">res</span><span class="o">.</span><span class="n">foldLeft</span><span class="o">(</span><span class="s">&quot;start:&quot;</span><span class="o">)(</span><span class="k">_</span> <span class="o">+</span> <span class="s">&quot;-&gt;&quot;</span> <span class="o">+</span> <span class="k">_</span><span class="o">.</span><span class="n">toString</span><span class="o">)</span>
+</pre></div>
+
+
+<p>"start:-&gt;I-&gt;D-&gt;J-&gt;E-&gt;F-&gt;B-&gt;K-&gt;L-&gt;M-&gt;G-&gt;H-&gt;C-&gt;A"</p>
+<h2 id="2">2. 基于栈的非递归模式</h2>
+<h3 id="21">2.1 前序遍历</h3>
+<div class="highlight"><pre><span></span><span class="k">import</span> <span class="nn">collection.mutable</span>
+<span class="k">def</span> <span class="n">preOrderStack</span><span class="o">[</span><span class="kt">T</span>, <span class="kt">V</span><span class="o">](</span><span class="n">root</span><span class="k">:</span><span class="kt">TreeNode</span><span class="o">[</span><span class="kt">T</span><span class="o">],</span> <span class="n">fun</span><span class="k">:</span> <span class="kt">T</span> <span class="o">=&gt;</span> <span class="n">V</span><span class="o">)</span><span class="k">:</span> <span class="kt">List</span><span class="o">[</span><span class="kt">V</span><span class="o">]</span> <span class="k">=</span> <span class="o">{</span>
+  <span class="k">val</span> <span class="n">stack</span> <span class="k">=</span> <span class="n">mutable</span><span class="o">.</span><span class="nc">Stack</span><span class="o">[</span><span class="kt">TreeNode</span><span class="o">[</span><span class="kt">T</span><span class="o">]]()</span>
+  <span class="k">val</span> <span class="n">res</span> <span class="k">=</span> <span class="n">mutable</span><span class="o">.</span><span class="nc">ListBuffer</span><span class="o">[</span><span class="kt">V</span><span class="o">]()</span>
+  <span class="n">stack</span><span class="o">.</span><span class="n">push</span><span class="o">(</span><span class="n">root</span><span class="o">)</span>
+  <span class="k">while</span><span class="o">(</span><span class="n">stack</span><span class="o">.</span><span class="n">nonEmpty</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">val</span> <span class="n">node</span> <span class="k">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="o">()</span>
+    <span class="n">res</span> <span class="o">+=</span> <span class="n">fun</span><span class="o">(</span><span class="n">node</span><span class="o">.</span><span class="n">data</span><span class="o">)</span>
+    <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">reverse</span><span class="o">.</span><span class="n">map</span><span class="o">(</span><span class="n">stack</span><span class="o">.</span><span class="n">push</span><span class="o">)</span>
+  <span class="o">}</span>
+  <span class="n">res</span><span class="o">.</span><span class="n">toList</span>
+<span class="o">}</span>
+
+<span class="c1">// 前序遍历树节点</span>
+<span class="k">val</span> <span class="n">res</span> <span class="k">=</span> <span class="n">preOrderStack</span><span class="o">[</span><span class="kt">Char</span>, <span class="kt">Char</span><span class="o">](</span><span class="n">node13</span><span class="o">,</span> <span class="n">x</span> <span class="k">=&gt;</span> <span class="n">x</span><span class="o">)</span>
+<span class="n">res</span><span class="o">.</span><span class="n">foldLeft</span><span class="o">(</span><span class="s">&quot;start:&quot;</span><span class="o">)(</span><span class="k">_</span> <span class="o">+</span> <span class="s">&quot;-&gt;&quot;</span> <span class="o">+</span> <span class="k">_</span><span class="o">.</span><span class="n">toString</span><span class="o">)</span>
+</pre></div>
+
+
+<p>"start:-&gt;A-&gt;B-&gt;D-&gt;I-&gt;E-&gt;J-&gt;F-&gt;C-&gt;G-&gt;K-&gt;L-&gt;M-&gt;H"</p>
+<h3 id="22">2.2 后序遍历</h3>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="n">postOrderStack</span><span class="o">[</span><span class="kt">T</span>, <span class="kt">V</span><span class="o">](</span><span class="n">root</span><span class="k">:</span><span class="kt">TreeNode</span><span class="o">[</span><span class="kt">T</span><span class="o">],</span> <span class="n">fun</span><span class="k">:</span> <span class="kt">T</span> <span class="o">=&gt;</span> <span class="n">V</span><span class="o">)</span><span class="k">:</span> <span class="kt">List</span><span class="o">[</span><span class="kt">V</span><span class="o">]</span> <span class="k">=</span> <span class="o">{</span>
+  <span class="k">val</span> <span class="n">res</span> <span class="k">=</span> <span class="n">mutable</span><span class="o">.</span><span class="nc">ListBuffer</span><span class="o">[</span><span class="kt">V</span><span class="o">]()</span>
+  <span class="k">val</span> <span class="n">stack1</span> <span class="k">=</span> <span class="n">mutable</span><span class="o">.</span><span class="nc">Stack</span><span class="o">[</span><span class="kt">TreeNode</span><span class="o">[</span><span class="kt">T</span><span class="o">]]()</span>
+  <span class="k">val</span> <span class="n">stack2</span> <span class="k">=</span> <span class="n">mutable</span><span class="o">.</span><span class="nc">Stack</span><span class="o">[</span><span class="kt">TreeNode</span><span class="o">[</span><span class="kt">T</span><span class="o">]]()</span>
+  <span class="n">stack1</span><span class="o">.</span><span class="n">push</span><span class="o">(</span><span class="n">root</span><span class="o">)</span>
+  <span class="k">while</span><span class="o">(</span><span class="n">stack1</span><span class="o">.</span><span class="n">nonEmpty</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">val</span> <span class="n">node</span> <span class="k">=</span> <span class="n">stack1</span><span class="o">.</span><span class="n">pop</span><span class="o">()</span>
+    <span class="n">stack2</span><span class="o">.</span><span class="n">push</span><span class="o">(</span><span class="n">node</span><span class="o">)</span>
+    <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">map</span><span class="o">(</span><span class="n">stack1</span><span class="o">.</span><span class="n">push</span><span class="o">)</span>
+  <span class="o">}</span>
+
+  <span class="k">while</span><span class="o">(</span><span class="n">stack2</span><span class="o">.</span><span class="n">nonEmpty</span><span class="o">)</span>
+    <span class="n">res</span> <span class="o">+=</span> <span class="n">fun</span><span class="o">(</span><span class="n">stack2</span><span class="o">.</span><span class="n">pop</span><span class="o">().</span><span class="n">data</span><span class="o">)</span>
+  <span class="n">res</span><span class="o">.</span><span class="n">toList</span>
+<span class="o">}</span>
+
+<span class="c1">// 前序遍历树节点</span>
+<span class="k">val</span> <span class="n">res</span> <span class="k">=</span> <span class="n">postOrderStack</span><span class="o">[</span><span class="kt">Char</span>, <span class="kt">Char</span><span class="o">](</span><span class="n">node13</span><span class="o">,</span> <span class="n">x</span> <span class="k">=&gt;</span> <span class="n">x</span><span class="o">)</span>
+<span class="n">res</span><span class="o">.</span><span class="n">foldLeft</span><span class="o">(</span><span class="s">&quot;start:&quot;</span><span class="o">)(</span><span class="k">_</span> <span class="o">+</span> <span class="s">&quot;-&gt;&quot;</span> <span class="o">+</span> <span class="k">_</span><span class="o">.</span><span class="n">toString</span><span class="o">)</span>
+</pre></div>
+
+
+<p>"start:-&gt;I-&gt;D-&gt;J-&gt;E-&gt;F-&gt;B-&gt;K-&gt;L-&gt;M-&gt;G-&gt;H-&gt;C-&gt;A"</p>
+            </section>
+
+            <section class="post-info">
+                <div class="post-share">
+                    <a class="twitter" href="https://twitter.com/share?text=树的深度优先遍历——递归模式与基于栈的非递归模式&amp;url=/shu-de-shen-du-you-xian-bian-li-di-gui-mo-shi-yu-ji-yu-zhan-de-fei-di-gui-mo-shi.html" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                    <i class="ic ic-twitter"></i><span class="hidden">Twitter</span>
+                    </a>
+                    <a class="facebook" href="https://www.facebook.com/sharer/sharer.php?u=/shu-de-shen-du-you-xian-bian-li-di-gui-mo-shi-yu-ji-yu-zhan-de-fei-di-gui-mo-shi.html" onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                    <i class="ic ic-facebook"></i><span class="hidden">Facebook</span>
+                    </a>
+                    <a class="googleplus" href="https://plus.google.com/share?url=/shu-de-shen-du-you-xian-bian-li-di-gui-mo-shi-yu-ji-yu-zhan-de-fei-di-gui-mo-shi.html" onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                    <i class="ic ic-googleplus"></i><span class="hidden">Google+</span>
+                    </a>
+                    <div class="clear"></div>
+                </div>
+
+                <aside class="post-tags">
+<a href="/tag/scala.html">scala</a><a href="/tag/shu-ju-jie-gou.html">数据结构</a>                </aside>
+
+                <div class="clear"></div>
+
+                <aside class="post-author">
+
+
+                        <figure class="post-author-avatar">
+                            <img src="/images/touxiang.jpeg" alt="xiaojia" />
+                        </figure>
+                    <div class="post-author-bio">
+                        <h4 class="post-author-name"><a href="/author/xiaojia.html">xiaojia</a></h4>
+                            <p class="post-author-about">北京交通大学交通运输规划与管理专业</p>
+                            <span class="post-author-location"><i class="ic ic-location"></i> Beijing</span>
+                        <!-- Social linkes in alphabet order. -->
+                            <span class="post-author-github"><a target="_blank" href="https://github.com/XiaojiaZhang"><i class="ic ic-link"></i> GitHub</a></span>
+                    </div>
+                    <div class="clear"></div>
+                </aside>
+
+                </section>
+
+
+                <aside class="post-nav">
+                    <a class="post-nav-prev" href="/zhong-xie-zhong-zai-yu-duo-tai.html">
+                        <section class="post-nav-teaser">
+                            <i class="ic ic-arrow-right"></i>
+                                <h2 class="post-nav-title">重写、重载与多态</h2>
+                            <p class="post-nav-excerpt"></p>
+                        </section>
+                    </a>
+                    <div class="clear"></div>
+                </aside>
+
+            </div>
+        </article>
+    </main>
+      <!-- TODO : Body class -->
+    <div id="body-class" style="display: none;" class=""></div>
+
+    <footer id="footer">
+      <div class="inner">
+        <section class="credits">
+
+
+          <span class="credits-theme">Theme <a href="https://github.com/arulrajnet/attila" rel="nofollow">Attila</a></span>
+          <span class="credits-software">Published with <a href="https://github.com/getpelican/pelican" rel="nofollow">Pelican</a></span>
+        </section>
+      </div>
+    </footer>
+  </section>
+
+  <script type="text/javascript" src="/theme/js/script.js"></script>
+
+</body>
+</html>
