@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html" charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+
+  <title>Scala隐式系统之隐式参数</title>
+
+
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="origin" />
+  <meta name="generator" content="Pelican" />
+  <link href="/" rel="canonical" />
+
+  <!-- Feed -->
+
+  <link href="/theme/css/style.css" type="text/css" rel="stylesheet" />
+
+  <!-- Code highlight color scheme -->
+      <link href="/theme/css/code_blocks/github.css" rel="stylesheet">
+
+
+  <!-- Custom fonts -->
+  <link href='https://fonts.googleapis.com/css?family=Montserrat:400,300' rel='stylesheet' type='text/css' />
+  <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet" type="text/css" />
+
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+  <![endif]-->
+
+
+  <link href="/scalayin-shi-xi-tong-zhi-yin-shi-can-shu.html" rel="canonical" />
+
+
+    <meta name="author" content="xiaojia">
+
+    <meta name="tags" content="Scala">
+
+
+
+
+<!-- Open Graph -->
+<meta property="og:site_name" content="Stay Hungry, Stay Foolish"/>
+<meta property="og:title" content="Scala隐式系统之隐式参数"/>
+<meta property="og:description" content=""/>
+<meta property="og:locale" content="en_US"/>
+<meta property="og:url" content="/scalayin-shi-xi-tong-zhi-yin-shi-can-shu.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2019-04-21 00:00:00+00:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="/author/xiaojia.html">
+<meta property="article:section" content="articles"/>
+<meta property="article:tag" content="Scala"/>
+<meta property="og:image" content="/images/Scala_logo.png">
+
+<!-- Twitter Card -->
+
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "Article",
+  "name": "Scala隐式系统之隐式参数",
+  "headline": "Scala隐式系统之隐式参数",
+  "datePublished": "2019-04-21 00:00:00+00:00",
+  "dateModified": "",
+  "author": {
+    "@type": "Person",
+    "name": "xiaojia",
+    "url": "/author/xiaojia.html"
+  },
+  "image": "/images/Scala_logo.png",
+  "url": "/scalayin-shi-xi-tong-zhi-yin-shi-can-shu.html",
+  "description": ""
+}
+</script>
+</head>
+<!-- TODO : Body class -->
+<body class="home-template">
+
+<nav id="menu">
+  <a class="close-button">Close</a>
+  <div class="nav-wrapper">
+    <p class="nav-label">Menu</p>
+    <ul>
+          <li><a href="/archives.html" role="presentation">Archive</a></li>
+          <li><a href="/category/shu-ping.html" role="presentation">书评</a></li>
+          <li><a href="/category/za-wen.html" role="presentation">杂文</a></li>
+          <li><a href="/category/python.html" role="presentation">python</a></li>
+          <li><a href="/category/ji-suan-ji-wang-luo.html" role="presentation">计算机网络</a></li>
+          <li><a href="/category/scala.html" role="presentation">scala</a></li>
+
+              <li role="presentation"><a href="/pages/about-me.html">About Me</a></li>
+
+    </ul>
+  </div>
+</nav>
+    <!-- Progressbar -->
+    <div class="progress-container">
+        <span class="progress-bar"></span>
+    </div>
+
+    <!-- Page Header -->
+    <!-- Set your background image for this header on the line below. -->
+    <header id="post-header" class="has-cover">
+      <div class="inner">
+        <nav id="navigation">
+            <span id="home-button" class="nav-button">
+                <a class="home-button" href="/" title="Home"><i class="ic ic-arrow-left"></i> Home</a>
+            </span>
+          <span id="menu-button" class="nav-button">
+            <a class="menu-button"><i class="ic ic-menu"></i> Menu</a>
+          </span>
+        </nav>
+        <h1 class="post-title">Scala隐式系统之隐式参数</h1>
+        <!-- TODO : Proper class for headline -->
+        <span class="post-meta">
+                <a href="/author/xiaojia.html">xiaojia</a>
+            | <time datetime="21/04/2019">21/04/2019</time>
+        </span>
+        <!-- TODO : Modified check -->
+            <div class="post-cover cover" style="background-image: url('/images/Scala_logo.png')">
+      </div>
+    </header>
+
+  <section id="wrapper">
+    <a class="hidden-close"></a>
+
+    <!-- Post content -->
+    <main class="content" role="main">
+        <article class="post">
+        <div class="inner">
+            <section class="post-content">
+                <p>scala隐式系统包括隐式转换和隐式参数两大部分，本文我们先来聊聊隐式参数。</p>
+<p>隐式参数用法：编译器会使用隐式参数提供整个最后一组柯里化的参数列表。例如当最后一组柯里化参数被定义为隐式参数树，隐式参数可能会<code>someCall(a)</code>替换为<code>someCall(a)(b)</code>,或者将<code>new Some(a)</code>替换为<code>new Some(a)(b)</code>以及将<code>some(a)</code>替换为<code>some(a)(b, c, d)</code>，当时也可以显示提供隐式参数列表所需要的参数。乍看上去，隐式参数似乎与默认参数有点类似，这也是我自己在一开始学习隐式参数时所疑惑的地方，接下来我们一起对隐式参数一探究竟。</p>
+<h3 id="1-vs">1. 隐式参数 VS 默认参数</h3>
+<p>隐式参数与默认参数类似的一点是都位于参数列表的最后，但默认参数并不需要将函数参数柯里化。看如下例子：</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="n">defaultParam</span><span class="o">(</span><span class="n">first</span><span class="k">:</span> <span class="kt">String</span><span class="o">,</span> <span class="n">second</span><span class="k">:</span> <span class="kt">String</span><span class="o">=</span><span class="s">&quot;world&quot;</span><span class="o">)</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="n">first</span> <span class="o">+</span> <span class="n">second</span>
+
+<span class="n">defaultParam</span><span class="o">(</span><span class="s">&quot;Hello &quot;</span><span class="o">)</span>
+</pre></div>
+
+
+<p>"Hello world"</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="n">implicitParam</span><span class="o">(</span><span class="n">first</span><span class="k">:</span> <span class="kt">String</span><span class="o">)(</span><span class="k">implicit</span> <span class="n">second</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="n">first</span> <span class="o">+</span> <span class="n">second</span>
+<span class="k">implicit</span> <span class="k">val</span> <span class="n">second</span> <span class="k">=</span> <span class="s">&quot;World&quot;</span>
+<span class="n">implicitParam</span><span class="o">(</span><span class="s">&quot;Hello&quot;</span><span class="o">)</span>
+</pre></div>
+
+
+<p>"HelloWorld"</p>
+<p>以上是对默认参数与隐式参数的一个简单比较，默认参数通过在参数列表中提供默认值实现，隐式参数则在参数列表中使用关键字<code>implicit</code>定义，当调用函数隐式参数的函数时，编译器会在当前作用域内查找可用的同类型隐式值，使用该隐式值填充隐式参数列表。</p>
+<p>由于默认参数需要在参数列表中制定，默认参数只能是某一种给定的类型，默认参数也只能提供一个默认值。不同于默认参数，隐式参数可以为泛型参数，基于泛型的隐式参数可以有多个隐式值，这也是隐式参数相对于默认参数最显著的差异。因此，隐式参数对与泛型函数尤其有用。接下来我们来看一个使用隐式参数的实际案例。</p>
+<h3 id="2">2. 在泛型函数中使用隐式参数</h3>
+<p>我们准备定义一个用于寻找列表最大值的方法，该方法接收两个参数，一为目标列表，二为用于比较列表元素大小的方法，此处将该参数定义为<code>Ordering</code>特质。对于基本类型的列表，例如整型列表、字符串列表等，scala标准库提供了隐式的排序方法，如<code>Ordering[Int]</code>、<code>Ordering[String]</code>，因此我们想使用隐式参数来简化函数调用，这样在查找基本类型列表最大值时，我们可以不必显示给定比较大小的特质。我们的函数定义如下：</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="n">maxListImpParm</span><span class="o">[</span><span class="kt">T</span><span class="o">](</span><span class="n">elements</span><span class="k">:</span> <span class="kt">List</span><span class="o">[</span><span class="kt">T</span><span class="o">])(</span><span class="k">implicit</span> <span class="n">ordering</span><span class="k">:</span> <span class="kt">Ordering</span><span class="o">[</span><span class="kt">T</span><span class="o">])</span><span class="k">:</span> <span class="kt">T</span> <span class="o">=</span> <span class="n">elements</span> <span class="k">match</span> <span class="o">{</span>
+    <span class="k">case</span> <span class="nc">List</span><span class="o">()</span> <span class="k">=&gt;</span> <span class="k">throw</span> <span class="k">new</span> <span class="nc">IllegalArgumentException</span><span class="o">(</span><span class="s">&quot;empty List&quot;</span><span class="o">)</span>
+    <span class="k">case</span> <span class="nc">List</span><span class="o">(</span><span class="n">x</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="n">x</span>
+    <span class="k">case</span> <span class="n">x</span><span class="o">::</span><span class="n">rest</span> <span class="k">=&gt;</span>
+        <span class="k">val</span> <span class="n">maxRest</span> <span class="k">=</span> <span class="n">maxListImpParm</span><span class="o">(</span><span class="n">rest</span><span class="o">)(</span><span class="n">ordering</span><span class="o">)</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">ordering</span><span class="o">.</span><span class="n">gt</span><span class="o">(</span><span class="n">x</span><span class="o">,</span> <span class="n">maxRest</span><span class="o">))</span> <span class="n">x</span>
+        <span class="k">else</span> <span class="n">maxRest</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">maxListImpParm</span><span class="o">(</span><span class="nc">List</span><span class="o">(</span><span class="mi">3</span><span class="o">,</span> <span class="mi">5</span><span class="o">,</span> <span class="mi">7</span><span class="o">,</span> <span class="mi">2</span><span class="o">))</span>
+<span class="n">maxListImpParm</span><span class="o">(</span><span class="nc">List</span><span class="o">(</span><span class="s">&quot;Bob&quot;</span><span class="o">,</span> <span class="s">&quot;Ana&quot;</span><span class="o">,</span> <span class="s">&quot;Selina&quot;</span><span class="o">))</span>
+</pre></div>
+
+
+<p>7</p>
+<p>"Selina"</p>
+<p>由于scala提供了隐式的<code>Ordering[Int]</code>以及<code>Ordering[String]</code>,因此上述代码语句可以执行成功。</p>
+<div class="highlight"><pre><span></span><span class="k">case</span> <span class="k">class</span> <span class="nc">Score</span><span class="o">(</span><span class="n">value</span><span class="k">:</span> <span class="kt">Double</span><span class="o">)</span>
+
+<span class="k">implicit</span> <span class="k">object</span> <span class="nc">ScoreComp</span> <span class="k">extends</span> <span class="nc">Ordering</span><span class="o">[</span><span class="kt">Score</span><span class="o">]</span> <span class="o">{</span>
+    <span class="k">import</span> <span class="nn">math.ceil</span>
+    <span class="k">def</span> <span class="n">compare</span><span class="o">(</span><span class="n">x</span><span class="k">:</span> <span class="kt">Score</span><span class="o">,</span> <span class="n">y</span><span class="k">:</span> <span class="kt">Score</span><span class="o">)</span><span class="k">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="n">ceil</span><span class="o">(</span><span class="n">x</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="n">y</span><span class="o">.</span><span class="n">value</span><span class="o">).</span><span class="n">toInt</span>
+<span class="o">}</span>
+
+<span class="n">maxListImpParm</span><span class="o">(</span><span class="nc">List</span><span class="o">(</span><span class="nc">Score</span><span class="o">(</span><span class="mi">67</span><span class="o">),</span> <span class="nc">Score</span><span class="o">(</span><span class="mf">89.3</span><span class="o">),</span> <span class="nc">Score</span><span class="o">(</span><span class="mi">55</span><span class="o">)))</span>
+</pre></div>
+
+
+<p>Score(89.3)</p>
+<p>对于自定义类型，也可以通过引入隐式的<code>Ordering[Score]</code>特质实现最大值的查找。</p>
+<p>### 3. 基于隐式参数的上下文界定</p>
+<p>在上面查找列表最大值的例子中，在递归调用函数也可以省略掉隐式参数。因此，代码可以简化为如下：</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="n">maxListImpParm</span><span class="o">[</span><span class="kt">T</span><span class="o">](</span><span class="n">elements</span><span class="k">:</span> <span class="kt">List</span><span class="o">[</span><span class="kt">T</span><span class="o">])(</span><span class="k">implicit</span> <span class="n">ordering</span><span class="k">:</span> <span class="kt">Ordering</span><span class="o">[</span><span class="kt">T</span><span class="o">])</span><span class="k">:</span> <span class="kt">T</span> <span class="o">=</span> <span class="n">elements</span> <span class="k">match</span> <span class="o">{</span>
+    <span class="k">case</span> <span class="nc">List</span><span class="o">()</span> <span class="k">=&gt;</span> <span class="k">throw</span> <span class="k">new</span> <span class="nc">IllegalArgumentException</span><span class="o">(</span><span class="s">&quot;empty List&quot;</span><span class="o">)</span>
+    <span class="k">case</span> <span class="nc">List</span><span class="o">(</span><span class="n">x</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="n">x</span>
+    <span class="k">case</span> <span class="n">x</span><span class="o">::</span><span class="n">rest</span> <span class="k">=&gt;</span>
+        <span class="k">val</span> <span class="n">maxRest</span> <span class="k">=</span> <span class="n">maxListImpParm</span><span class="o">(</span><span class="n">rest</span><span class="o">)</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">ordering</span><span class="o">.</span><span class="n">gt</span><span class="o">(</span><span class="n">x</span><span class="o">,</span> <span class="n">maxRest</span><span class="o">))</span> <span class="n">x</span>
+        <span class="k">else</span> <span class="n">maxRest</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>我们将递归调用<code>maxListImpParm(rest)(ordering)</code>改成了<code>maxListParm(rest)</code>，此时缺失的参数<code>ordering</code>将通过同样的隐式参数查找规则查找。</p>
+<p>还有一种方法可以去掉对ordering的第二处调用<code>ordering.gt(x, maxReset)</code>，这涉及到标准库中定义的如下方法：</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="n">implicitly</span><span class="o">[</span><span class="kt">T</span><span class="o">](</span><span class="k">implicit</span> <span class="n">t</span><span class="k">:</span> <span class="kt">T</span><span class="o">)</span> <span class="k">=</span> <span class="n">t</span>
+</pre></div>
+
+
+<p><code>implicitly</code>泛型函数中唯一的参数被设置为隐式参数，因此可以直接通过<code>implicitly[T]</code>的形式进行调用，此时编译器会查找是否存在隐式的类型为T的变量，如果存在，则返回该变量。因此，<code>maxListImpParm</code>可进一步写为如下形式：</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="n">maxListImpParm</span><span class="o">[</span><span class="kt">T</span><span class="o">](</span><span class="n">elements</span><span class="k">:</span> <span class="kt">List</span><span class="o">[</span><span class="kt">T</span><span class="o">])(</span><span class="k">implicit</span> <span class="n">ordering</span><span class="k">:</span> <span class="kt">Ordering</span><span class="o">[</span><span class="kt">T</span><span class="o">])</span><span class="k">:</span> <span class="kt">T</span> <span class="o">=</span> <span class="n">elements</span> <span class="k">match</span> <span class="o">{</span>
+    <span class="k">case</span> <span class="nc">List</span><span class="o">()</span> <span class="k">=&gt;</span> <span class="k">throw</span> <span class="k">new</span> <span class="nc">IllegalArgumentException</span><span class="o">(</span><span class="s">&quot;empty List&quot;</span><span class="o">)</span>
+    <span class="k">case</span> <span class="nc">List</span><span class="o">(</span><span class="n">x</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="n">x</span>
+    <span class="k">case</span> <span class="n">x</span><span class="o">::</span><span class="n">rest</span> <span class="k">=&gt;</span>
+        <span class="k">val</span> <span class="n">maxRest</span> <span class="k">=</span> <span class="n">maxListImpParm</span><span class="o">(</span><span class="n">rest</span><span class="o">)</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">implicitly</span><span class="o">[</span><span class="kt">Ordering</span><span class="o">[</span><span class="kt">T</span><span class="o">]].</span><span class="n">gt</span><span class="o">(</span><span class="n">x</span><span class="o">,</span> <span class="n">maxRest</span><span class="o">))</span> <span class="n">x</span>
+        <span class="k">else</span> <span class="n">maxRest</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>我们使用<code>implicitly[Ordering[T]]</code>代替了<code>ordering</code>参数名称，此时方法体中不涉及隐式参数的参数名称。由于这个模式经常出现，scala提供了上下文界定来让我们进一步简化函数签名，<code>maxListImpParm</code>可写为如下形式：</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="n">maxListImpParm</span><span class="o">[</span><span class="kt">T:</span> <span class="kt">Ordering</span><span class="o">](</span><span class="n">elements</span><span class="k">:</span> <span class="kt">List</span><span class="o">[</span><span class="kt">T</span><span class="o">])</span><span class="k">:</span> <span class="kt">T</span> <span class="o">=</span> <span class="n">elements</span> <span class="k">match</span> <span class="o">{</span>
+    <span class="k">case</span> <span class="nc">List</span><span class="o">()</span> <span class="k">=&gt;</span> <span class="k">throw</span> <span class="k">new</span> <span class="nc">IllegalArgumentException</span><span class="o">(</span><span class="s">&quot;empty List&quot;</span><span class="o">)</span>
+    <span class="k">case</span> <span class="nc">List</span><span class="o">(</span><span class="n">x</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="n">x</span>
+    <span class="k">case</span> <span class="n">x</span><span class="o">::</span><span class="n">rest</span> <span class="k">=&gt;</span>
+        <span class="k">val</span> <span class="n">maxRest</span> <span class="k">=</span> <span class="n">maxListImpParm</span><span class="o">(</span><span class="n">rest</span><span class="o">)</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">implicitly</span><span class="o">[</span><span class="kt">Ordering</span><span class="o">[</span><span class="kt">T</span><span class="o">]].</span><span class="n">gt</span><span class="o">(</span><span class="n">x</span><span class="o">,</span> <span class="n">maxRest</span><span class="o">))</span> <span class="n">x</span>
+        <span class="k">else</span> <span class="n">maxRest</span>
+<span class="o">}</span>
+
+<span class="n">maxListImpParm</span><span class="o">(</span><span class="nc">List</span><span class="o">(</span><span class="nc">Score</span><span class="o">(</span><span class="mi">67</span><span class="o">),</span> <span class="nc">Score</span><span class="o">(</span><span class="mf">89.3</span><span class="o">),</span> <span class="nc">Score</span><span class="o">(</span><span class="mi">55</span><span class="o">)))</span>
+</pre></div>
+
+
+<p>Score(89.3)</p>
+<p>上下文界定是一种简化的方法，编译器会将其翻译为对等的包含有一个隐式参数的方法签名，即：
+<code>def maxListImpParm[T: Ordering](elements: List[T]): T</code>等价于<code>def maxListImpParm[T](elements: List[T])(implicit AnyName: Ordering[T])</code>。</p>
+<p>由于隐式参数的名称不会出现在方法体中，因此我们可以使用上下文界定简化方法签名。同样，当使用上下文界定时，如果需要获取隐式参数，我们需要使用<code>implicitly[T]</code>获取类型为T的隐式参数。</p>
+            </section>
+
+            <section class="post-info">
+                <div class="post-share">
+                    <a class="twitter" href="https://twitter.com/share?text=Scala隐式系统之隐式参数&amp;url=/scalayin-shi-xi-tong-zhi-yin-shi-can-shu.html" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                    <i class="ic ic-twitter"></i><span class="hidden">Twitter</span>
+                    </a>
+                    <a class="facebook" href="https://www.facebook.com/sharer/sharer.php?u=/scalayin-shi-xi-tong-zhi-yin-shi-can-shu.html" onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                    <i class="ic ic-facebook"></i><span class="hidden">Facebook</span>
+                    </a>
+                    <a class="googleplus" href="https://plus.google.com/share?url=/scalayin-shi-xi-tong-zhi-yin-shi-can-shu.html" onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                    <i class="ic ic-googleplus"></i><span class="hidden">Google+</span>
+                    </a>
+                    <div class="clear"></div>
+                </div>
+
+                <aside class="post-tags">
+<a href="/tag/scala.html">Scala</a>                </aside>
+
+                <div class="clear"></div>
+
+                <aside class="post-author">
+
+
+                        <figure class="post-author-avatar">
+                            <img src="/images/touxiang.jpeg" alt="xiaojia" />
+                        </figure>
+                    <div class="post-author-bio">
+                        <h4 class="post-author-name"><a href="/author/xiaojia.html">xiaojia</a></h4>
+                            <p class="post-author-about">北京交通大学交通运输规划与管理专业</p>
+                            <span class="post-author-location"><i class="ic ic-location"></i> Beijing</span>
+                        <!-- Social linkes in alphabet order. -->
+                            <span class="post-author-github"><a target="_blank" href="https://github.com/XiaojiaZhang"><i class="ic ic-link"></i> GitHub</a></span>
+                    </div>
+                    <div class="clear"></div>
+                </aside>
+
+                </section>
+
+
+                <aside class="post-nav">
+                    <a class="post-nav-prev" href="/bi-bao.html">
+                        <section class="post-nav-teaser">
+                            <i class="ic ic-arrow-right"></i>
+                                <h2 class="post-nav-title">闭包</h2>
+                            <p class="post-nav-excerpt"></p>
+                        </section>
+                    </a>
+                    <div class="clear"></div>
+                </aside>
+
+            </div>
+        </article>
+    </main>
+      <!-- TODO : Body class -->
+    <div id="body-class" style="display: none;" class=""></div>
+
+    <footer id="footer">
+      <div class="inner">
+        <section class="credits">
+
+
+          <span class="credits-theme">Theme <a href="https://github.com/arulrajnet/attila" rel="nofollow">Attila</a></span>
+          <span class="credits-software">Published with <a href="https://github.com/getpelican/pelican" rel="nofollow">Pelican</a></span>
+        </section>
+      </div>
+    </footer>
+  </section>
+
+  <script type="text/javascript" src="/theme/js/script.js"></script>
+
+</body>
+</html>
