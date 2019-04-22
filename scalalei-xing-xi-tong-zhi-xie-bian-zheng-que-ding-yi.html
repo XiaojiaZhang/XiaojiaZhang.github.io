@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html" charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+
+  <title>Scala类型系统之协变正确定义</title>
+
+
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="origin" />
+  <meta name="generator" content="Pelican" />
+  <link href="/" rel="canonical" />
+
+  <!-- Feed -->
+
+  <link href="/theme/css/style.css" type="text/css" rel="stylesheet" />
+
+  <!-- Code highlight color scheme -->
+      <link href="/theme/css/code_blocks/github.css" rel="stylesheet">
+
+
+  <!-- Custom fonts -->
+  <link href='https://fonts.googleapis.com/css?family=Montserrat:400,300' rel='stylesheet' type='text/css' />
+  <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet" type="text/css" />
+
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+  <![endif]-->
+
+
+  <link href="/scalalei-xing-xi-tong-zhi-xie-bian-zheng-que-ding-yi.html" rel="canonical" />
+
+
+    <meta name="author" content="xiaojia">
+
+    <meta name="tags" content="Scala">
+
+
+
+
+<!-- Open Graph -->
+<meta property="og:site_name" content="Stay Hungry, Stay Foolish"/>
+<meta property="og:title" content="Scala类型系统之协变正确定义"/>
+<meta property="og:description" content=""/>
+<meta property="og:locale" content="en_US"/>
+<meta property="og:url" content="/scalalei-xing-xi-tong-zhi-xie-bian-zheng-que-ding-yi.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2019-04-22 00:00:00+00:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="/author/xiaojia.html">
+<meta property="article:section" content="articles"/>
+<meta property="article:tag" content="Scala"/>
+<meta property="og:image" content="/images/Scala_logo.png">
+
+<!-- Twitter Card -->
+
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "Article",
+  "name": "Scala类型系统之协变正确定义",
+  "headline": "Scala类型系统之协变正确定义",
+  "datePublished": "2019-04-22 00:00:00+00:00",
+  "dateModified": "",
+  "author": {
+    "@type": "Person",
+    "name": "xiaojia",
+    "url": "/author/xiaojia.html"
+  },
+  "image": "/images/Scala_logo.png",
+  "url": "/scalalei-xing-xi-tong-zhi-xie-bian-zheng-que-ding-yi.html",
+  "description": ""
+}
+</script>
+</head>
+<!-- TODO : Body class -->
+<body class="home-template">
+
+<nav id="menu">
+  <a class="close-button">Close</a>
+  <div class="nav-wrapper">
+    <p class="nav-label">Menu</p>
+    <ul>
+          <li><a href="/archives.html" role="presentation">Archive</a></li>
+          <li><a href="/category/shu-ping.html" role="presentation">书评</a></li>
+          <li><a href="/category/za-wen.html" role="presentation">杂文</a></li>
+          <li><a href="/category/python.html" role="presentation">python</a></li>
+          <li><a href="/category/ji-suan-ji-wang-luo.html" role="presentation">计算机网络</a></li>
+          <li><a href="/category/scala.html" role="presentation">scala</a></li>
+
+              <li role="presentation"><a href="/pages/about-me.html">About Me</a></li>
+
+    </ul>
+  </div>
+</nav>
+    <!-- Progressbar -->
+    <div class="progress-container">
+        <span class="progress-bar"></span>
+    </div>
+
+    <!-- Page Header -->
+    <!-- Set your background image for this header on the line below. -->
+    <header id="post-header" class="has-cover">
+      <div class="inner">
+        <nav id="navigation">
+            <span id="home-button" class="nav-button">
+                <a class="home-button" href="/" title="Home"><i class="ic ic-arrow-left"></i> Home</a>
+            </span>
+          <span id="menu-button" class="nav-button">
+            <a class="menu-button"><i class="ic ic-menu"></i> Menu</a>
+          </span>
+        </nav>
+        <h1 class="post-title">Scala类型系统之协变正确定义</h1>
+        <!-- TODO : Proper class for headline -->
+        <span class="post-meta">
+                <a href="/author/xiaojia.html">xiaojia</a>
+            | <time datetime="22/04/2019">22/04/2019</time>
+        </span>
+        <!-- TODO : Modified check -->
+            <div class="post-cover cover" style="background-image: url('/images/Scala_logo.png')">
+      </div>
+    </header>
+
+  <section id="wrapper">
+    <a class="hidden-close"></a>
+
+    <!-- Post content -->
+    <main class="content" role="main">
+        <article class="post">
+        <div class="inner">
+            <section class="post-content">
+                <div class="toc">
+<ul>
+<li><a href="#1">1. 协变类型基础</a></li>
+<li><a href="#2">2.   协变定义中常见错误</a></li>
+<li><a href="#3">3. 协变类型正确定义</a></li>
+<li><a href="#4">4. 协变类型的特例</a></li>
+</ul>
+</div>
+<p>scala类型参数型变包括协变、逆变与不变。本文主要总结协变类型定义中存在的常见问题。</p>
+<h3 id="1">1. 协变类型基础</h3>
+<p>对于一个拥有类型参数的泛型类型或泛型特质，我们可以在定义通过指定类型参数的型变符号来说明该泛型类型的型变类型。通过在类型参数前添加<code>+</code>号，可以声明当前泛型类型为协变的。例如，定义如下协变队列：</p>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Queue</span><span class="o">[</span><span class="kt">+T</span><span class="o">]</span>
+<span class="nc">val</span> <span class="n">x</span><span class="k">:</span> <span class="kt">Queue</span><span class="o">[</span><span class="kt">Any</span><span class="o">]</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">Queue</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span>
+</pre></div>
+
+
+<p>由于<code>Int</code>是<code>Any</code>的子类，且<code>Queue</code>为协变类型，因此<code>Queue[Int]</code>是<code>Queue[Any]</code>的子类。可以将一个<code>Queue[Int]</code>类型的对象赋值给<code>Queue[Any</code>类型的变量。</p>
+<h3 id="2">2.   协变定义中常见错误</h3>
+<p>假设我们需要对当前队列添加一个用于入队的方法，考虑使用<code>List</code>作为保存队列元素的集合，每次入队后返回一个新的队列。对Queue类的初步设计可能如下：</p>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Queue</span><span class="o">[</span><span class="kt">+T</span><span class="o">](</span><span class="k">val</span> <span class="n">data</span><span class="k">:</span> <span class="kt">List</span><span class="o">[</span><span class="kt">T</span><span class="o">]</span> <span class="k">=</span> <span class="nc">List</span><span class="o">()){</span>
+    <span class="k">def</span> <span class="n">put</span><span class="o">(</span><span class="n">x</span><span class="k">:</span> <span class="kt">T</span><span class="o">)</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">Queue</span><span class="o">[</span><span class="kt">T</span><span class="o">](</span><span class="n">x</span><span class="o">::</span><span class="n">data</span><span class="o">)</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>cmd4.sc:2: covariant type T occurs in contravariant position in type T of value x
+    def put(x: T) = new Queue[T](x::data)
+            ^Compilation Failed
+
+
+Compilation Failed
+</pre></div>
+
+
+<p>对上述类定义代码进行编译，编译结果报错：协变类型T出现在需要逆变类型的变量x处。事实上，一旦泛型参数类型作为方法参数类型出现，包含这个泛型参数的类或特质就不能以这个类型参数做协变。上述类定义中，T作为方法参数类型出现，且T作为协变类型参数出现，因此违背了协变类定义规则。对协变定义规则的深入理解有助于理解型变约束的合理性。</p>
+<p>假设上述代码可以正确编译通过，我们便能够正确执行如下语句：</p>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">QueueInt</span><span class="o">(</span><span class="k">val</span> <span class="n">data</span><span class="k">:</span> <span class="kt">List</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">List</span><span class="o">())</span> <span class="k">extends</span> <span class="nc">Queue</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="o">{</span>
+    <span class="k">import</span> <span class="nn">math.sqrt</span>
+    <span class="k">override</span> <span class="k">def</span> <span class="n">put</span><span class="o">(</span><span class="n">x</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">QueueInt</span><span class="o">(</span><span class="n">sqrt</span><span class="o">(</span><span class="n">x</span><span class="o">)::</span><span class="n">data</span><span class="o">)</span> 
+<span class="o">}</span>
+<span class="c1">//由于Queue是协变类型，因此此条语句成立</span>
+<span class="k">val</span> <span class="n">x</span><span class="k">:</span> <span class="kt">Queue</span><span class="o">[</span><span class="kt">Any</span><span class="o">]</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">Queue</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span>
+<span class="c1">// 由于String是Any的子类，因此此条语句成立</span>
+<span class="n">x</span><span class="o">.</span><span class="n">put</span><span class="o">(</span><span class="s">&quot;abc&quot;</span><span class="o">)</span>
+</pre></div>
+
+
+<p>但上述第二条语句显然不应该成立，我们无法对一个字符串型变量进行开方，这正是协变定义中编译失败的原因。</p>
+<h3 id="3">3. 协变类型正确定义</h3>
+<p>处理协变类型方法定义错误的一种方式是添加类型下界约束</p>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Queue</span><span class="o">[</span><span class="kt">+T</span><span class="o">](</span><span class="k">val</span> <span class="n">data</span><span class="k">:</span> <span class="kt">List</span><span class="o">[</span><span class="kt">T</span><span class="o">]</span><span class="k">=</span><span class="nc">List</span><span class="o">())</span> <span class="o">{</span>
+     <span class="k">def</span> <span class="n">put</span><span class="o">[</span><span class="kt">A</span> <span class="k">&gt;:</span> <span class="kt">T</span><span class="o">](</span><span class="n">x</span><span class="k">:</span> <span class="kt">A</span><span class="o">)</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">Queue</span><span class="o">[</span><span class="kt">A</span><span class="o">](</span><span class="n">x</span><span class="o">::</span><span class="n">data</span><span class="o">)</span>
+     <span class="k">override</span> <span class="k">def</span> <span class="n">toString</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">toString</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>为便于展示，我们重写Queue类的toString方法，该方法直接打印列表元素。将<code>put</code>方法的参数类型修改为类型参数T的父类（包括T），此时可以向其中添加类型A的元素，返回的队列元素类型将是原有元素与新加入元素类型的最近父类，如下例所示：</p>
+<div class="highlight"><pre><span></span><span class="k">val</span> <span class="n">x</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">Queue</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span>
+<span class="k">val</span> <span class="n">y</span> <span class="k">=</span> <span class="n">x</span><span class="o">.</span><span class="n">put</span><span class="o">(</span><span class="s">&quot;abc&quot;</span><span class="o">)</span>
+</pre></div>
+
+
+<p>Queue[Int] = List()</p>
+<p>Queue[Any] = List(abc)</p>
+<p>可以看到，向<code>Queue[Int]</code>类型的队列添加<code>String</code>类型的元素后，返回一个<code>Queue[Any]</code>类型的队列，因为<code>Any</code>是<code>Sting</code>与<code>Int</code>的最近公共父类。</p>
+<h3 id="4">4. 协变类型的特例</h3>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Test</span><span class="o">[</span><span class="kt">+T</span><span class="o">](</span><span class="n">init</span><span class="k">:</span> <span class="kt">T</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">var</span> <span class="n">x</span> <span class="k">=</span> <span class="n">init</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>cmd11.sc:2: covariant type T occurs in contravariant position in type T of value x_=
+    var x = init
+        ^Compilation Failed
+
+
+Compilation Failed
+</pre></div>
+
+
+<p>在上述协变类型定义包含一个可变字段x，尝试对代码进行编译，提示在可变变量定义中存在协变定义错误。实际上这只是我们在前一节提到的协变类型方法的参数类型不能与类型参数一致的一个特例。</p>
+<p>当在scala中定义一个可变对象时，自动会生成两个方法，一个是get方法<code>def x: T</code>，一个是set方法<code>def x_=(y: T)</code>。由于set方法包含类型参数，因此无法协变定义失败。</p>
+<p>为了解决这一问题，通常可以将可变对象访问级别设置为对象内部可见性：</p>
+<div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Test</span><span class="o">[</span><span class="kt">+T</span><span class="o">](</span><span class="n">init</span><span class="k">:</span> <span class="kt">T</span><span class="o">){</span>
+    <span class="k">private</span><span class="o">[</span><span class="kt">this</span><span class="o">]</span> <span class="k">var</span> <span class="n">x</span> <span class="k">=</span> <span class="n">init</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>使用<code>private</code>关键字结合限定词<code>this</code>使得x只能在对象内被访问，由于不存在从对象外部访问的可能性，因此之前讨论的型变可能引发的尅型错误也不会存在，即便此时我们的set方法参数类型仍然与类型参数相同，编译器也能正确编译通过。</p>
+            </section>
+
+            <section class="post-info">
+                <div class="post-share">
+                    <a class="twitter" href="https://twitter.com/share?text=Scala类型系统之协变正确定义&amp;url=/scalalei-xing-xi-tong-zhi-xie-bian-zheng-que-ding-yi.html" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                    <i class="ic ic-twitter"></i><span class="hidden">Twitter</span>
+                    </a>
+                    <a class="facebook" href="https://www.facebook.com/sharer/sharer.php?u=/scalalei-xing-xi-tong-zhi-xie-bian-zheng-que-ding-yi.html" onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                    <i class="ic ic-facebook"></i><span class="hidden">Facebook</span>
+                    </a>
+                    <a class="googleplus" href="https://plus.google.com/share?url=/scalalei-xing-xi-tong-zhi-xie-bian-zheng-que-ding-yi.html" onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                    <i class="ic ic-googleplus"></i><span class="hidden">Google+</span>
+                    </a>
+                    <div class="clear"></div>
+                </div>
+
+                <aside class="post-tags">
+<a href="/tag/scala.html">Scala</a>                </aside>
+
+                <div class="clear"></div>
+
+                <aside class="post-author">
+
+
+                        <figure class="post-author-avatar">
+                            <img src="/images/touxiang.jpeg" alt="xiaojia" />
+                        </figure>
+                    <div class="post-author-bio">
+                        <h4 class="post-author-name"><a href="/author/xiaojia.html">xiaojia</a></h4>
+                            <p class="post-author-about">北京交通大学交通运输规划与管理专业</p>
+                            <span class="post-author-location"><i class="ic ic-location"></i> Beijing</span>
+                        <!-- Social linkes in alphabet order. -->
+                            <span class="post-author-github"><a target="_blank" href="https://github.com/XiaojiaZhang"><i class="ic ic-link"></i> GitHub</a></span>
+                    </div>
+                    <div class="clear"></div>
+                </aside>
+
+                </section>
+
+
+                <aside class="post-nav">
+                    <a class="post-nav-prev" href="/scalayin-shi-xi-tong-zhi-yin-shi-can-shu.html">
+                        <section class="post-nav-teaser">
+                            <i class="ic ic-arrow-right"></i>
+                                <h2 class="post-nav-title">Scala隐式系统之隐式参数</h2>
+                            <p class="post-nav-excerpt"></p>
+                        </section>
+                    </a>
+                    <div class="clear"></div>
+                </aside>
+
+            </div>
+        </article>
+    </main>
+      <!-- TODO : Body class -->
+    <div id="body-class" style="display: none;" class=""></div>
+
+    <footer id="footer">
+      <div class="inner">
+        <section class="credits">
+
+
+          <span class="credits-theme">Theme <a href="https://github.com/arulrajnet/attila" rel="nofollow">Attila</a></span>
+          <span class="credits-software">Published with <a href="https://github.com/getpelican/pelican" rel="nofollow">Pelican</a></span>
+        </section>
+      </div>
+    </footer>
+  </section>
+
+  <script type="text/javascript" src="/theme/js/script.js"></script>
+
+</body>
+</html>
