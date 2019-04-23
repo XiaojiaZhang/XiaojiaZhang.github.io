@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html" charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+
+  <title>Scala：非严格求值(non-strictness)参数</title>
+
+
+  <meta name="HandheldFriendly" content="True" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="origin" />
+  <meta name="generator" content="Pelican" />
+  <link href="/" rel="canonical" />
+
+  <!-- Feed -->
+
+  <link href="/theme/css/style.css" type="text/css" rel="stylesheet" />
+
+  <!-- Code highlight color scheme -->
+      <link href="/theme/css/code_blocks/github.css" rel="stylesheet">
+
+
+  <!-- Custom fonts -->
+  <link href='https://fonts.googleapis.com/css?family=Montserrat:400,300' rel='stylesheet' type='text/css' />
+  <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet" type="text/css" />
+
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+  <![endif]-->
+
+
+  <link href="/scalafei-yan-ge-qiu-zhi-non-strictnesscan-shu.html" rel="canonical" />
+
+
+    <meta name="author" content="xiaojia">
+
+    <meta name="tags" content="Scala">
+
+
+
+
+<!-- Open Graph -->
+<meta property="og:site_name" content="Stay Hungry, Stay Foolish"/>
+<meta property="og:title" content="Scala：非严格求值(non-strictness)参数"/>
+<meta property="og:description" content=""/>
+<meta property="og:locale" content="en_US"/>
+<meta property="og:url" content="/scalafei-yan-ge-qiu-zhi-non-strictnesscan-shu.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2019-04-23 00:00:00+00:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="/author/xiaojia.html">
+<meta property="article:section" content="articles"/>
+<meta property="article:tag" content="Scala"/>
+<meta property="og:image" content="/images/Scala2.jpg">
+
+<!-- Twitter Card -->
+
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "Article",
+  "name": "Scala：非严格求值(non-strictness)参数",
+  "headline": "Scala：非严格求值(non-strictness)参数",
+  "datePublished": "2019-04-23 00:00:00+00:00",
+  "dateModified": "",
+  "author": {
+    "@type": "Person",
+    "name": "xiaojia",
+    "url": "/author/xiaojia.html"
+  },
+  "image": "/images/Scala2.jpg",
+  "url": "/scalafei-yan-ge-qiu-zhi-non-strictnesscan-shu.html",
+  "description": ""
+}
+</script>
+</head>
+<!-- TODO : Body class -->
+<body class="home-template">
+
+<nav id="menu">
+  <a class="close-button">Close</a>
+  <div class="nav-wrapper">
+    <p class="nav-label">Menu</p>
+    <ul>
+          <li><a href="/archives.html" role="presentation">Archive</a></li>
+          <li><a href="/category/shu-ping.html" role="presentation">书评</a></li>
+          <li><a href="/category/za-wen.html" role="presentation">杂文</a></li>
+          <li><a href="/category/python.html" role="presentation">python</a></li>
+          <li><a href="/category/ji-suan-ji-wang-luo.html" role="presentation">计算机网络</a></li>
+          <li><a href="/category/scala.html" role="presentation">scala</a></li>
+
+              <li role="presentation"><a href="/pages/about-me.html">About Me</a></li>
+
+    </ul>
+  </div>
+</nav>
+    <!-- Progressbar -->
+    <div class="progress-container">
+        <span class="progress-bar"></span>
+    </div>
+
+    <!-- Page Header -->
+    <!-- Set your background image for this header on the line below. -->
+    <header id="post-header" class="has-cover">
+      <div class="inner">
+        <nav id="navigation">
+            <span id="home-button" class="nav-button">
+                <a class="home-button" href="/" title="Home"><i class="ic ic-arrow-left"></i> Home</a>
+            </span>
+          <span id="menu-button" class="nav-button">
+            <a class="menu-button"><i class="ic ic-menu"></i> Menu</a>
+          </span>
+        </nav>
+        <h1 class="post-title">Scala：非严格求值(non-strictness)参数</h1>
+        <!-- TODO : Proper class for headline -->
+        <span class="post-meta">
+                <a href="/author/xiaojia.html">xiaojia</a>
+            | <time datetime="23/04/2019">23/04/2019</time>
+        </span>
+        <!-- TODO : Modified check -->
+            <div class="post-cover cover" style="background-image: url('/images/Scala2.jpg')">
+      </div>
+    </header>
+
+  <section id="wrapper">
+    <a class="hidden-close"></a>
+
+    <!-- Post content -->
+    <main class="content" role="main">
+        <article class="post">
+        <div class="inner">
+            <section class="post-content">
+                <div class="toc">
+<ul>
+<li><a href="#1">1. 非严格求值</a></li>
+<li><a href="#2">2. 传名参数</a></li>
+<li><a href="#3">3. 传名参数在并发编程中的应用</a></li>
+</ul>
+</div>
+<h3 id="1">1. 非严格求值</h3>
+<p>非严格求值是函数的一种属性，称一个函数是非严格求值的意思是这个函数可以选择不对它的一个或多个参数求值。相反，一个严格求值的函数总是对它的参数求值。严格求值函数在大部分编程语言中是一种常态。并且大部分编程语言也只支持严格求值。在Scala中除非明确声明，否则任何函数都是严格求值的。</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="n">add</span><span class="o">(</span><span class="n">x</span><span class="k">:</span> <span class="kt">Int</span><span class="o">,</span> <span class="n">y</span><span class="k">:</span> <span class="kt">Int</span><span class="o">)</span> <span class="k">=</span> <span class="o">{</span>
+    <span class="n">println</span><span class="o">(</span><span class="s">&quot;run...&quot;</span><span class="o">)</span>
+    <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">add</span><span class="o">(</span><span class="mi">12</span><span class="o">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">error</span><span class="o">(</span><span class="s">&quot;failure&quot;</span><span class="o">))</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="s s-Atom">java</span><span class="p">.</span><span class="s s-Atom">lang</span><span class="p">.</span><span class="nv">RuntimeException</span><span class="s s-Atom">:</span> <span class="s s-Atom">failure</span>
+  <span class="s s-Atom">scala</span><span class="p">.</span><span class="s s-Atom">sys</span><span class="p">.</span><span class="s s-Atom">package$</span><span class="p">.</span><span class="nf">error</span><span class="p">(</span><span class="s s-Atom">package</span><span class="p">.</span><span class="nn">scala</span><span class="p">:</span><span class="mi">30</span><span class="p">)</span>
+  <span class="s s-Atom">ammonite</span><span class="p">.</span><span class="err">$</span><span class="s s-Atom">sess</span><span class="p">.</span><span class="s s-Atom">cmd6$Helper</span><span class="p">.</span><span class="s s-Atom">&amp;lt</span><span class="p">;</span><span class="s s-Atom">init&amp;gt</span><span class="p">;(</span><span class="s s-Atom">cmd6</span><span class="p">.</span><span class="nn">sc</span><span class="p">:</span><span class="mi">1</span><span class="p">)</span>
+  <span class="s s-Atom">ammonite</span><span class="p">.</span><span class="err">$</span><span class="s s-Atom">sess</span><span class="p">.</span><span class="s s-Atom">cmd6$</span><span class="p">.</span><span class="s s-Atom">&amp;lt</span><span class="p">;</span><span class="s s-Atom">init&amp;gt</span><span class="p">;(</span><span class="s s-Atom">cmd6</span><span class="p">.</span><span class="nn">sc</span><span class="p">:</span><span class="mi">7</span><span class="p">)</span>
+  <span class="s s-Atom">ammonite</span><span class="p">.</span><span class="err">$</span><span class="s s-Atom">sess</span><span class="p">.</span><span class="s s-Atom">cmd6$</span><span class="p">.</span><span class="s s-Atom">&amp;lt</span><span class="p">;</span><span class="s s-Atom">clinit&amp;gt</span><span class="p">;(</span><span class="s s-Atom">cmd6</span><span class="p">.</span><span class="nn">sc</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+
+<p>在上面的例子中，我们定义了一个简单的计算两个整数之和的函数，由于默认参数为严格求值，因此当执行函数调用时，函数将在函数体执行之前，先计算传入的实参，然后尝试将其赋值给形参。由于我们传入<code>sys.error("failure")</code>给形参y，因此函数在第一步计算实参时变引发异常，导致函数调用失败。</p>
+<p>如果参数y是一个非严格求值参数，函数调用会有什么不一样的结果呢？非严格求值参数只有在函数体执行中需要时才进行计算求值。因此即使传入<code>sys.error("failure")</code>给参数y，在调用涉及到形参y的语句之前，函数都不会抛出异常。由于scala支持函数作为参数，因此可以使用空参数函数来实现非严格求值。</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="n">add</span><span class="o">(</span><span class="n">x</span><span class="k">:</span> <span class="kt">Int</span><span class="o">,</span> <span class="n">y</span><span class="k">:</span> <span class="o">()</span> <span class="o">=&gt;</span> <span class="nc">Int</span><span class="o">)</span> <span class="k">=</span> <span class="o">{</span>
+    <span class="n">println</span><span class="o">(</span><span class="s">&quot;run...&quot;</span><span class="o">)</span>
+    <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="o">()</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>将参数y定义为一个接受空参数返回整数值的函数，在函数体中可以通过调用该函数得到整数值。此时y仍然是一个严格求值参数，但由于其是一个函数，调用add函数时，并不涉及到y函数的实际调用，基于此我们可以模仿出与非严格求值参数一样的运行方式。尝试对该add函数调用。</p>
+<div class="highlight"><pre><span></span><span class="n">add</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="o">()</span> <span class="k">=&gt;</span> <span class="n">sys</span><span class="o">.</span><span class="n">error</span><span class="o">(</span><span class="s">&quot;failure&quot;</span><span class="o">))</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="s s-Atom">run</span><span class="p">...</span>
+
+
+
+<span class="s s-Atom">java</span><span class="p">.</span><span class="s s-Atom">lang</span><span class="p">.</span><span class="nv">RuntimeException</span><span class="s s-Atom">:</span> <span class="s s-Atom">failure</span>
+  <span class="s s-Atom">scala</span><span class="p">.</span><span class="s s-Atom">sys</span><span class="p">.</span><span class="s s-Atom">package$</span><span class="p">.</span><span class="nf">error</span><span class="p">(</span><span class="s s-Atom">package</span><span class="p">.</span><span class="nn">scala</span><span class="p">:</span><span class="mi">30</span><span class="p">)</span>
+  <span class="s s-Atom">ammonite</span><span class="p">.</span><span class="err">$</span><span class="s s-Atom">sess</span><span class="p">.</span><span class="s s-Atom">cmd8$Helper</span><span class="p">.</span><span class="err">$</span><span class="nf">anonfun$res8$1</span><span class="p">(</span><span class="s s-Atom">cmd8</span><span class="p">.</span><span class="nn">sc</span><span class="p">:</span><span class="mi">1</span><span class="p">)</span>
+  <span class="s s-Atom">scala</span><span class="p">.</span><span class="nv">Function0</span><span class="p">.</span><span class="nf">apply$mcI$sp</span><span class="p">(</span><span class="nv">Function0</span><span class="p">.</span><span class="nn">scala</span><span class="p">:</span><span class="mi">39</span><span class="p">)</span>
+  <span class="s s-Atom">ammonite</span><span class="p">.</span><span class="err">$</span><span class="s s-Atom">sess</span><span class="p">.</span><span class="s s-Atom">cmd7$Helper</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="s s-Atom">cmd7</span><span class="p">.</span><span class="nn">sc</span><span class="p">:</span><span class="mi">3</span><span class="p">)</span>
+  <span class="s s-Atom">ammonite</span><span class="p">.</span><span class="err">$</span><span class="s s-Atom">sess</span><span class="p">.</span><span class="s s-Atom">cmd8$Helper</span><span class="p">.</span><span class="s s-Atom">&amp;lt</span><span class="p">;</span><span class="s s-Atom">init&amp;gt</span><span class="p">;(</span><span class="s s-Atom">cmd8</span><span class="p">.</span><span class="nn">sc</span><span class="p">:</span><span class="mi">1</span><span class="p">)</span>
+  <span class="s s-Atom">ammonite</span><span class="p">.</span><span class="err">$</span><span class="s s-Atom">sess</span><span class="p">.</span><span class="s s-Atom">cmd8$</span><span class="p">.</span><span class="s s-Atom">&amp;lt</span><span class="p">;</span><span class="s s-Atom">init&amp;gt</span><span class="p">;(</span><span class="s s-Atom">cmd8</span><span class="p">.</span><span class="nn">sc</span><span class="p">:</span><span class="mi">7</span><span class="p">)</span>
+  <span class="s s-Atom">ammonite</span><span class="p">.</span><span class="err">$</span><span class="s s-Atom">sess</span><span class="p">.</span><span class="s s-Atom">cmd8$</span><span class="p">.</span><span class="s s-Atom">&amp;lt</span><span class="p">;</span><span class="s s-Atom">clinit&amp;gt</span><span class="p">;(</span><span class="s s-Atom">cmd8</span><span class="p">.</span><span class="nn">sc</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+
+<p>函数调用结果和我们预期一样，第一条<code>println</code>函数调用由于不涉及参数y因此被成功执行，只有当第一次执行y的调用时，函数才抛出异常。</p>
+<h3 id="2">2. 传名参数</h3>
+<p>由于非严格求值函数的重要性，scala提供了一种简洁的语法用于声明函数参数为非严格求值的，有时称其为传名参数(by-name)。这种语法便是在前一节空参数函数的形式上直接去掉括号<code>()</code>，使用这种方法定义的非严格求值参数，由于其参数类型不再是函数，因此我们直接在函数体中使用参数名称而不是通过函数调用的形式。</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="n">add</span><span class="o">(</span><span class="n">x</span><span class="k">:</span> <span class="kt">Int</span><span class="o">,</span> <span class="n">y</span><span class="k">:</span> <span class="o">=&gt;</span> <span class="nc">Int</span><span class="o">)</span> <span class="k">=</span> <span class="o">{</span>
+    <span class="n">print</span><span class="o">(</span><span class="s">&quot;run...&quot;</span><span class="o">)</span>
+    <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">add</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">2</span><span class="o">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>run...
+</pre></div>
+
+
+<p>3</p>
+<p>实际上，传名参数的执行原理于第一节中的空参数函数形式完全一致，scala只是提供了更简洁的语法。由此不难发现一个问题，即如果函数体中涉及到多次对传名参数的使用，每次都会涉及对空参数函数的隐式调用。如果该非严格求值参数的计算开销较大，则会对函数执行效率产生不小影响。</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="n">add</span><span class="o">(</span><span class="n">x</span><span class="k">:</span> <span class="kt">Int</span><span class="o">,</span> <span class="n">y</span><span class="k">:</span> <span class="o">=&gt;</span> <span class="nc">Int</span><span class="o">)</span> <span class="k">=</span> <span class="o">{</span>
+    <span class="n">println</span><span class="o">(</span><span class="s">&quot;run...&quot;</span><span class="o">)</span>
+    <span class="n">println</span><span class="o">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="o">)</span>
+    <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">add</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="o">{</span><span class="nc">Thread</span><span class="o">.</span><span class="n">sleep</span><span class="o">(</span><span class="mi">3000</span><span class="o">);</span> <span class="n">println</span><span class="o">(</span><span class="s">&quot;calculate y&quot;</span><span class="o">);</span> <span class="mi">2</span><span class="o">})</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>run...
+calculate y
+3
+calculate y
+</pre></div>
+
+
+<p>3</p>
+<p>add函数中涉及到两处对传名参数y的引用，每次引用y都需要重新计算其参数值。在我们的调用中，y的计算过程包括线程休眠3秒钟，输出调试信息以及返回y。两次引用意味着线程总共要休眠6秒钟。</p>
+<p>对于计算开销较大的传名参数，可以考虑对其结果进行缓存，只在第一次使用时进行计算，其后引用直接返回缓存结果。scala提供了<code>lazy</code>关键字用于定义一个缓存结果。</p>
+<p>def add(x: Int, y: =&gt; Int) = {
+    lazy val y1 =  y
+    println("run...")
+    println(x + y1)
+    x + y1
+}应用</p>
+<div class="highlight"><pre><span></span><span class="n">add</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="o">{</span><span class="nc">Thread</span><span class="o">.</span><span class="n">sleep</span><span class="o">(</span><span class="mi">3000</span><span class="o">);</span> <span class="n">println</span><span class="o">(</span><span class="s">&quot;calculate y&quot;</span><span class="o">);</span> <span class="mi">2</span><span class="o">})</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>run...
+calculate y
+3
+</pre></div>
+
+
+<p>3</p>
+<p>我们定义了一个y1变量用于缓存y的参数值。观察函数输出结果，首先定义变量y1的过程并不涉及到对参数y的求值，这可以从<code>run...</code>语句先于<code>calculate y</code>打印进行验证，只有当第一次真正引用y1变量时，才会计算参数y的值。而在后续引用y1变量时，由于其结果已经被缓存，因此不会重复计算，这可以从<code>calculate y</code>只打印了一次得到验证。</p>
+<h3 id="3">3. 传名参数在并发编程中的应用</h3>
+<p>scala中Future对象支持异步计算。由于需要在不同的线程中进行计算。Future对象使用Future特质伴生对象的<code>apply</code>方法进行定义，方法签名如下：</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="n">apply</span><span class="o">[</span><span class="kt">T</span><span class="o">](</span><span class="n">body</span><span class="k">:</span> <span class="o">=&gt;</span> <span class="n">T</span><span class="o">)(</span><span class="k">implicit</span> <span class="n">executor</span><span class="k">:</span> <span class="kt">ExecutionContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">Future</span><span class="o">[</span><span class="kt">T</span><span class="o">]</span>
+</pre></div>
+
+
+<p>该方法包括两个参数，第二个参数为用于执行计算的上下文执行环境，为<a href="/scalayin-shi-xi-tong-zhi-yin-shi-can-shu.html">隐式参数</a>。第一个参数为一个类型为T的传名参数。由于对body参数的求值需要异步进行，因此该参数必须被设置为传名参数，实现非严格求值。可以使用如下语句定义一个Future[Int]对象</p>
+<div class="highlight"><pre><span></span><span class="c1">// 导入类型为ExecutionContext的隐式值</span>
+<span class="k">import</span> <span class="nn">scala.concurrent.ExecutionContext.Implicits.global</span>
+<span class="k">import</span> <span class="nn">scala.concurrent.Future</span>
+<span class="k">val</span> <span class="n">x</span><span class="k">:</span><span class="kt">Future</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Future</span> <span class="o">{</span>
+    <span class="nc">Thread</span><span class="o">.</span><span class="n">sleep</span><span class="o">(</span><span class="mi">3000</span><span class="o">)</span>
+    <span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span>
+<span class="o">}</span>
+</pre></div>
+            </section>
+
+            <section class="post-info">
+                <div class="post-share">
+                    <a class="twitter" href="https://twitter.com/share?text=Scala：非严格求值(non-strictness)参数&amp;url=/scalafei-yan-ge-qiu-zhi-non-strictnesscan-shu.html" onclick="window.open(this.href, 'twitter-share', 'width=550,height=235');return false;">
+                    <i class="ic ic-twitter"></i><span class="hidden">Twitter</span>
+                    </a>
+                    <a class="facebook" href="https://www.facebook.com/sharer/sharer.php?u=/scalafei-yan-ge-qiu-zhi-non-strictnesscan-shu.html" onclick="window.open(this.href, 'facebook-share','width=580,height=296');return false;">
+                    <i class="ic ic-facebook"></i><span class="hidden">Facebook</span>
+                    </a>
+                    <a class="googleplus" href="https://plus.google.com/share?url=/scalafei-yan-ge-qiu-zhi-non-strictnesscan-shu.html" onclick="window.open(this.href, 'google-plus-share', 'width=490,height=530');return false;">
+                    <i class="ic ic-googleplus"></i><span class="hidden">Google+</span>
+                    </a>
+                    <div class="clear"></div>
+                </div>
+
+                <aside class="post-tags">
+<a href="/tag/scala.html">Scala</a>                </aside>
+
+                <div class="clear"></div>
+
+                <aside class="post-author">
+
+
+                        <figure class="post-author-avatar">
+                            <img src="/images/touxiang.jpeg" alt="xiaojia" />
+                        </figure>
+                    <div class="post-author-bio">
+                        <h4 class="post-author-name"><a href="/author/xiaojia.html">xiaojia</a></h4>
+                            <p class="post-author-about">北京交通大学交通运输规划与管理专业</p>
+                            <span class="post-author-location"><i class="ic ic-location"></i> Beijing</span>
+                        <!-- Social linkes in alphabet order. -->
+                            <span class="post-author-github"><a target="_blank" href="https://github.com/XiaojiaZhang"><i class="ic ic-link"></i> GitHub</a></span>
+                    </div>
+                    <div class="clear"></div>
+                </aside>
+
+                </section>
+
+
+                <aside class="post-nav">
+                    <a class="post-nav-prev" href="/scalalei-xing-xi-tong-zhi-xie-bian-zheng-que-ding-yi.html">
+                        <section class="post-nav-teaser">
+                            <i class="ic ic-arrow-right"></i>
+                                <h2 class="post-nav-title">Scala类型系统之协变正确定义</h2>
+                            <p class="post-nav-excerpt"></p>
+                        </section>
+                    </a>
+                    <div class="clear"></div>
+                </aside>
+
+            </div>
+        </article>
+    </main>
+      <!-- TODO : Body class -->
+    <div id="body-class" style="display: none;" class=""></div>
+
+    <footer id="footer">
+      <div class="inner">
+        <section class="credits">
+
+
+          <span class="credits-theme">Theme <a href="https://github.com/arulrajnet/attila" rel="nofollow">Attila</a></span>
+          <span class="credits-software">Published with <a href="https://github.com/getpelican/pelican" rel="nofollow">Pelican</a></span>
+        </section>
+      </div>
+    </footer>
+  </section>
+
+  <script type="text/javascript" src="/theme/js/script.js"></script>
+
+</body>
+</html>
